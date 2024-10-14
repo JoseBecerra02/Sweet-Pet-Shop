@@ -1,20 +1,28 @@
+// config/server.js
+require('dotenv').config(); 
 const express = require('express');
 const cors = require('cors');
-const connectDB = require('./database'); // Tu archivo de conexión a la base de datos
-require('dotenv').config();
+const cookieParser = require('cookie-parser');
+const helmet = require('helmet');
+const connectDB = require('./database');
 
 const app = express();
 
 // Configurar CORS
 const corsOptions = {
-  origin: 'http://localhost:3001', // frontend URL
-  credentials: true, // Enable Access-Control-Allow-Credentials
+  origin: process.env.CLIENT_URL || 'http://localhost:3001',
+  credentials: true,
 };
 
-app.use(cors(corsOptions)); // Apply CORS with options
+app.use(cors(corsOptions));
+app.use(cookieParser()); 
+app.use(helmet()); 
 
 // Conectar a la base de datos
-connectDB();
+connectDB().catch((error) => {
+  console.error('Error conectando a la base de datos:', error);
+  process.exit(1); 
+});
 
 // Middleware para parsear JSON
 app.use(express.json());
@@ -25,8 +33,13 @@ const usuarioRoutes = require('../routes/usuarioRoutes');
 // Usar rutas
 app.use('/api/usuarios', usuarioRoutes);
 
-// Iniciar el servidor
+// Manejo de errores global
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send({ message: 'Error interno del servidor' });
+});
+
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
-  console.log(`Servidor corriendo en el puerto ${port}`);
+  console.log(`Servidor corriendo en el puerto ${port} en entorno ${process.env.NODE_ENV || 'desarrollo'}`);
 });

@@ -1,51 +1,57 @@
+// controllers/AuthController.js
+
 const { OAuth2Client } = require('google-auth-library');
 const jwt = require('jsonwebtoken');
 const Usuario = require('../models/Usuario');
 
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const client = new OAuth2Client(process.env.GOOGLE_OAUTH_CLIENT_ID);
 
 const googleLoginBackend = async (req, res) => {
   const { token } = req.body;
 
   try {
+    // Verificar el token de Google
     const ticket = await client.verifyIdToken({
       idToken: token,
-      audience: process.env.GOOGLE_CLIENT_ID, // Verificación con el Client ID en el backend
+      audience: process.env.GOOGLE_OAUTH_CLIENT_ID,
     });
+
     const payload = ticket.getPayload();
     const { email, name } = payload;
 
-    // Buscar o crear el usuario
+    // Buscar al usuario en la base de datos
     let user = await Usuario.findOne({ correo: email });
-    
+
+    // Crear un nuevo usuario si no existe
     if (!user) {
-      // Si es un nuevo usuario, asignar el rol de admin si el correo es de Isabela
       const rol = email === 'isabela.rosero@correounivalle.edu.co' ? 'admin' : 'cliente';
-      
+
       user = new Usuario({
         correo: email,
         nombre: name,
-        rol: rol, // Rol asignado aquí
+        rol: rol,
         estado: 'activo',
       });
       await user.save();
     }
 
-    // Verificar si el rol está correctamente asignado
-    console.log(`Rol del usuario: ${user.rol}`);
-
     // Generar el token JWT
     const jwtToken = jwt.sign(
-      { id: user._id, correo: user.correo, rol: user.rol }, // Asegurarse de que el rol esté incluido en el token
+      { id: user._id, correo: user.correo, rol: user.rol },
       process.env.JWT_SECRET,
-      { expiresIn: '1h' }
+      { expiresIn: '3d' }
     );
+    
+    // Configurar la cookie con SameSite y Secure
+    res.cookie('token', jwtToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', 
+      sameSite: 'Lax', 
+      maxAge: 3 * 24 * 60 * 60 * 1000, 
+    });
 
-    // Verificar los detalles del token generado
-    console.log(`Token generado: ${jwtToken}`);
-
+    // Devolver el token en la respuesta
     res.status(200).json({ token: jwtToken, user });
-
   } catch (error) {
     console.error('Error verificando token de Google:', error);
     res.status(401).json({ error: 'Token inválido' });

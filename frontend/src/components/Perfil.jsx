@@ -1,4 +1,7 @@
+// components/Perfil.jsx
+
 import React, { useState, useEffect } from 'react';
+import Cookies from 'js-cookie';
 import axios from 'axios';
 
 const Perfil = () => {
@@ -10,16 +13,26 @@ const Perfil = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const token = localStorage.getItem('token'); // Asegúrate de que el token esté en localStorage
+        // Obtener el token desde las cookies
+        const token = Cookies.get('token');
+
+        if (!token) {
+          console.error('Token no encontrado');
+          return;
+        }
+
         const config = {
           headers: {
-            Authorization: `Bearer ${token}`, // Adjuntar el token en el encabezado
+            Authorization: `Bearer ${token}`, 
           },
+          withCredentials: true,
         };
         
         const response = await axios.get('http://localhost:3000/api/usuarios/perfil', config);
-        setUser(response.data.user); // Establecer el estado del usuario con los datos recibidos
-        console.log(response.data);
+        setUser(response.data.user);
+        setTelefono(response.data.user.telefono || '');
+        setDireccion(response.data.user.direccion || '');
+        setCiudad(response.data.user.ciudad || '');
       } catch (error) {
         console.error('Error al obtener el perfil:', error);
       }
@@ -27,21 +40,31 @@ const Perfil = () => {
   
     fetchProfile();
   }, []);
-  
 
   const handleUpdateProfile = async () => {
-    const token = localStorage.getItem('token');
     try {
+      const token = Cookies.get('token');
+      if (!token) {
+        console.error('Token no encontrado');
+        return;
+      }
+
+      const data = { telefono, direccion, ciudad };
+
+      console.log('Datos a actualizar:', data);
+
       const response = await axios.put(
         'http://localhost:3000/api/usuarios/perfil',
-        { telefono, direccion, ciudad },
+        data,
         {
-          headers: { Authorization: `Bearer ${token}` },
-          withCredentials: true  // Permitir envío de credenciales
+          headers: {
+            Authorization: `Bearer ${token}`, 
+          },
+          withCredentials: true,
         }
       );
       alert('Perfil actualizado con éxito.');
-      setUser(response.data.user); // Actualizar el estado con la nueva información
+      setUser(response.data.user);
     } catch (error) {
       console.error('Error al actualizar el perfil:', error);
     }

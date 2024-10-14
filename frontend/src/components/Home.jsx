@@ -1,3 +1,4 @@
+//components/Home.js
 import React from 'react';
 import { Container, Typography, Button } from '@mui/material';
 import { Link } from 'react-router-dom';
@@ -15,7 +16,7 @@ const Home = () => {
         variant="contained" 
         color="primary" 
         component={Link} 
-        to="/perfil"  // Enlace al perfil
+        to="/perfil"  
         style={{ marginTop: '20px' }}
       >
         Go to Profile
