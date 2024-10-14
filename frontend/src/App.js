@@ -5,6 +5,8 @@ import Cookies from 'js-cookie';
 import axios from 'axios';
 import Home from './components/Home';
 import Perfil from './components/Perfil';
+import AdminDashboard from './components/admin/AdminDashboard';
+import Catalogo from './components/admin/Catalogo';
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -79,7 +81,9 @@ const App = () => {
 
           {/* Redirección a Home si se accede a una ruta no válida */}
           <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
+          <Route path="/dashboard-admin" element={<AdminDashboard/>} />
+          <Route path="/catalogAdmin" element={<Catalogo/>} />
+          </Routes>
       </Router>
     </GoogleOAuthProvider>
   );
