@@ -9,25 +9,25 @@ const Perfil = () => {
 
   useEffect(() => {
     const fetchProfile = async () => {
-        const token = localStorage.getItem('token');  // Get token from localStorage
-        if (token) {
-          try {
-            const response = await axios.get('http://localhost:3000/api/usuarios/perfil', {
-              headers: { Authorization: `Bearer ${token}` },  // Pass token
-              withCredentials: true  // Allow credentials
-            });
-            setUser(response.data.user);
-          } catch (error) {
-            console.error('Error al obtener el perfil:', error);
-          }
-        } else {
-          console.error('No token found in localStorage.');
-        }
-      };
-      
-
+      try {
+        const token = localStorage.getItem('token'); // Asegúrate de que el token esté en localStorage
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`, // Adjuntar el token en el encabezado
+          },
+        };
+        
+        const response = await axios.get('http://localhost:3000/api/usuarios/perfil', config);
+        setUser(response.data.user); // Establecer el estado del usuario con los datos recibidos
+        console.log(response.data);
+      } catch (error) {
+        console.error('Error al obtener el perfil:', error);
+      }
+    };
+  
     fetchProfile();
   }, []);
+  
 
   const handleUpdateProfile = async () => {
     const token = localStorage.getItem('token');

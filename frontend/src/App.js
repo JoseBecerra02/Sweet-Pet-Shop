@@ -43,7 +43,7 @@ const App = () => {
   }, []);
 
   return (
-    <GoogleOAuthProvider clientId="340874428494-ot9uprkvvq4ha529arl97e9mehfojm5b.apps.googleusercontent.com">
+    <GoogleOAuthProvider clientId="197152996427-tnahvkham0qkj09onm3a82mo3n6b0s2k.apps.googleusercontent.com">
       <Router>
         <Routes>
           {/* Ruta principal */}
