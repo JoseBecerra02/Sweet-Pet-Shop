@@ -17,6 +17,7 @@ import CatalogoCliente from './CatalogoCliente';
 import Carrito from './Carrito';
 import ProductoDetalle from './ProductoDetalle';
 import HistorialPedidos from './HistorialPedidos';
+import Perfil from './Perfil'; // Importar el componente Perfil
 
 export default function ClienteDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -35,7 +36,7 @@ export default function ClienteDashboard() {
       case 'historialPedidos':
         return <HistorialPedidos />;
       case 'perfil':
-        return <ProductoDetalle />;
+        return <Perfil />; // Mostrar el componente Perfil
       default:
         return <CatalogoCliente />;
     }
@@ -53,7 +54,7 @@ export default function ClienteDashboard() {
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             Sweet Pet Shop
           </Typography>
-          <IconButton color="inherit">
+          <IconButton color="inherit" onClick={() => setSelectedSection('perfil')}>
             <Person />
           </IconButton>
         </Toolbar>

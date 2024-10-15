@@ -1,8 +1,16 @@
-// components/Perfil.jsx
-
 import React, { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
 import axios from 'axios';
+import {
+  Box,
+  TextField,
+  Button,
+  Typography,
+  Container,
+  Card,
+  CardContent,
+  CardActions,
+} from '@mui/material';
 
 const Perfil = () => {
   const [user, setUser] = useState({});
@@ -23,11 +31,11 @@ const Perfil = () => {
 
         const config = {
           headers: {
-            Authorization: `Bearer ${token}`, 
+            Authorization: `Bearer ${token}`,
           },
           withCredentials: true,
         };
-        
+
         const response = await axios.get('http://localhost:3000/api/usuarios/perfil', config);
         setUser(response.data.user);
         setTelefono(response.data.user.telefono || '');
@@ -37,7 +45,7 @@ const Perfil = () => {
         console.error('Error al obtener el perfil:', error);
       }
     };
-  
+
     fetchProfile();
   }, []);
 
@@ -58,7 +66,7 @@ const Perfil = () => {
         data,
         {
           headers: {
-            Authorization: `Bearer ${token}`, 
+            Authorization: `Bearer ${token}`,
           },
           withCredentials: true,
         }
@@ -71,28 +79,51 @@ const Perfil = () => {
   };
 
   return (
-    <div>
-      <h2>Perfil de {user.nombre}</h2>
-      <input
-        type="text"
-        placeholder="Teléfono"
-        value={telefono}
-        onChange={(e) => setTelefono(e.target.value)}
-      />
-      <input
-        type="text"
-        placeholder="Dirección"
-        value={direccion}
-        onChange={(e) => setDireccion(e.target.value)}
-      />
-      <input
-        type="text"
-        placeholder="Ciudad"
-        value={ciudad}
-        onChange={(e) => setCiudad(e.target.value)}
-      />
-      <button onClick={handleUpdateProfile}>Actualizar Perfil</button>
-    </div>
+    <Container maxWidth="sm">
+      <Card sx={{ mt: 4 }}>
+        <CardContent>
+          <Typography variant="h5" component="div" gutterBottom>
+            Perfil de {user.nombre}
+          </Typography>
+          <Box component="form" noValidate autoComplete="off">
+            <TextField
+              fullWidth
+              label="Teléfono"
+              variant="outlined"
+              margin="normal"
+              value={telefono}
+              onChange={(e) => setTelefono(e.target.value)}
+            />
+            <TextField
+              fullWidth
+              label="Dirección"
+              variant="outlined"
+              margin="normal"
+              value={direccion}
+              onChange={(e) => setDireccion(e.target.value)}
+            />
+            <TextField
+              fullWidth
+              label="Ciudad"
+              variant="outlined"
+              margin="normal"
+              value={ciudad}
+              onChange={(e) => setCiudad(e.target.value)}
+            />
+          </Box>
+        </CardContent>
+        <CardActions>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleUpdateProfile}
+            fullWidth
+          >
+            Actualizar Perfil
+          </Button>
+        </CardActions>
+      </Card>
+    </Container>
   );
 };
 

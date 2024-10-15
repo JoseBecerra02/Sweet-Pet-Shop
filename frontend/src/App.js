@@ -4,7 +4,7 @@ import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import Cookies from 'js-cookie';
 import axios from 'axios';
 import Home from './components/Home';
-import Perfil from './components/Perfil';
+import Perfil from './components/client/Perfil';
 import AdminDashboard from './components/admin/AdminDashboard';
 import Catalogo from './components/admin/Catalogo';
 import ClienteDashboard from './components/client/ClienteDashboard';
