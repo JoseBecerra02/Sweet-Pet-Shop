@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const generarIdSecuencial = require('../middlewares/generarIdSecuencial');
 
 const FacturaSchema = new mongoose.Schema({
     id_factura: {

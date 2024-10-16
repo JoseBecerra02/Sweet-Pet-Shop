@@ -1,11 +1,14 @@
-// models/Inventario.js
-
 const mongoose = require('mongoose');
+const generarIdSecuencial = require('../middlewares/generarIdSecuencial');
 
 const InventarioSchema = new mongoose.Schema({
     id_producto: { type: Number, unique: true, required: true, default: 0, min: 0 },
     nombre_producto: { type: String, required: true, trim: true },
-    categoria: { type: String, required: true, trim: true },
+    categoria: { 
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Categoria',
+        required: true 
+    },
     cantidad: {
         type: Number,
         required: true,
