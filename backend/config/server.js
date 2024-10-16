@@ -29,9 +29,11 @@ app.use(express.json());
 
 // Importar rutas
 const usuarioRoutes = require('../routes/usuarioRoutes');
+const inventarioRoutes = require('../routes/inventarioRoutes');
 
 // Usar rutas
 app.use('/api/usuarios', usuarioRoutes);
+app.use('/api/inventario', inventarioRoutes);
 
 // Manejo de errores global
 app.use((err, req, res, next) => {
