@@ -24,7 +24,15 @@ const googleLoginBackend = async (req, res) => {
 
     // Crear un nuevo usuario si no existe
     if (!user) {
-      const rol = email === 'isabela.rosero@correounivalle.edu.co' ? 'admin' : 'cliente';
+      const adminEmails = [
+        'isabela.rosero@correounivalle.edu.co',
+        'orrego.sebastian@correounivalle.edu.co',
+        'manuel.cardoso@correounivalle.edu.co',
+        'stefhania.noguera@correounivalle.edu.co',
+        'maria.paula.giraldo@correounivalle.edu.co',
+        'jose.becerra@correounivalle.edu.co',
+      ];
+      const rol = adminEmails.includes(email) ? 'admin' : 'cliente';
 
       user = new Usuario({
         correo: email,
