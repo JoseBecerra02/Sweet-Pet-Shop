@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Cookies from 'js-cookie';
 import {
   AppBar,
   Toolbar,
@@ -13,6 +14,7 @@ import {
   Box,
   Card,
   CardContent,
+  Button,
   Grid,
 } from "@mui/material";
 import { Menu as MenuIcon, Notifications, Home, People, Inventory, ShoppingCart, Settings } from "@mui/icons-material";
@@ -36,6 +38,15 @@ export default function AdminDashboard() {
     setSidebarOpen(!sidebarOpen);
   };
 
+/*   const handleLogout = () => {
+    // Eliminar cookies
+    Cookies.remove('token');
+    Cookies.remove('rol');
+
+    // Redirigir al usuario a la página principal (login)
+    navigate('/');
+  };
+ */
   // Manejar navegación
   const handleNavigation = (path) => {
     navigate(path);
@@ -50,6 +61,7 @@ export default function AdminDashboard() {
           <IconButton edge="start" color="inherit" onClick={toggleDrawer} sx={{ mr: 2 }}>
             <MenuIcon />
           </IconButton>
+          {/* <Button color="inherit" onClick={handleLogout}>Cerrar sesión</Button> */}
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             Dashboard
           </Typography>

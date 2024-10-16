@@ -56,6 +56,19 @@ const App = () => {
     }
   };
 
+/*   const handleLogout = () => {
+    // Eliminar las cookies que contienen el token y el rol
+    Cookies.remove('token');
+    Cookies.remove('rol');
+
+    // Actualizar el estado de autenticación (puedes hacer esto en el estado principal)
+    setIsLoggedIn(false);
+    setUserRole(null);
+
+    // Redirigir a la página de inicio
+    window.location.href = '/';
+  }; */
+
   const handleLoginFailure = () => {
     console.log('Error al iniciar sesión con Google.');
     alert('Error al iniciar sesión con Google. Inténtelo nuevamente.');
