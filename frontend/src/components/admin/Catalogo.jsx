@@ -36,8 +36,8 @@ export default function Catalogo() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [products, setProducts] = useState([
-    { name: "Dog Food", price: "$20", description: "Nutritious food for dogs", category: "Food", imageUrl: "https://example.com/dogfood.jpg" },
-    { name: "Cat Toy", price: "$10", description: "Fun toy for cats", category: "Toys", imageUrl: "https://example.com/cattoy.jpg" },
+    { name: "Comida para Perros", price: "$20", description: "Comida nutritiva para perros", category: "Comida", imageUrl: "https://example.com/dogfood.jpg" },
+    { name: "Juguete para Gatos", price: "$10", description: "Juguete divertido para gatos", category: "Juguetes", imageUrl: "https://example.com/cattoy.jpg" },
   ]);
   const [newProduct, setNewProduct] = useState({
     name: "",
@@ -46,7 +46,7 @@ export default function Catalogo() {
     category: "",
     imageUrl: "",
   });
-  const [categories, setCategories] = useState(["Category 1", "Category 2", "Category 3"]);
+  const [categories, setCategories] = useState(["Categoría 1", "Categoría 2", "Categoría 3"]);
   const [newCategory, setNewCategory] = useState("");
 
   const navigate = useNavigate();
@@ -103,13 +103,13 @@ export default function Catalogo() {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            Product Catalog
+            Catálogo de Productos
           </Typography>
           <Button variant="contained" color="primary" onClick={handleDialogOpen}>
-            + ADD PRODUCT
+            + AGREGAR PRODUCTO
           </Button>
           <Button variant="contained" color="secondary" onClick={handleCategoryDialogOpen} sx={{ ml: 2 }}>
-            + ADD CATEGORY
+            + AGREGAR CATEGORÍA
           </Button>
         </Toolbar>
       </AppBar>
@@ -141,25 +141,25 @@ export default function Catalogo() {
               <ListItemIcon>
                 <People />
               </ListItemIcon>
-              {sidebarOpen && <ListItemText primary="Users" />}
+              {sidebarOpen && <ListItemText primary="Usuarios" />}
             </ListItem>
             <ListItem button onClick={() => navigate("/catalog")}>
               <ListItemIcon>
                 <Inventory />
               </ListItemIcon>
-              {sidebarOpen && <ListItemText primary="Catalog" />}
+              {sidebarOpen && <ListItemText primary="Catálogo" />}
             </ListItem>
             <ListItem button onClick={() => navigate("/orders")}>
               <ListItemIcon>
                 <ShoppingCart />
               </ListItemIcon>
-              {sidebarOpen && <ListItemText primary="Orders" />}
+              {sidebarOpen && <ListItemText primary="Órdenes" />}
             </ListItem>
             <ListItem button onClick={() => navigate("/settings")}>
               <ListItemIcon>
                 <Settings />
               </ListItemIcon>
-              {sidebarOpen && <ListItemText primary="Settings" />}
+              {sidebarOpen && <ListItemText primary="Configuración" />}
             </ListItem>
           </List>
         </Box>
@@ -172,12 +172,12 @@ export default function Catalogo() {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Image</TableCell>
-                <TableCell>Name</TableCell>
-                <TableCell>Price</TableCell>
-                <TableCell>Description</TableCell>
-                <TableCell>Category</TableCell>
-                <TableCell>Actions</TableCell>
+                <TableCell>Imagen</TableCell>
+                <TableCell>Nombre</TableCell>
+                <TableCell>Precio</TableCell>
+                <TableCell>Descripción</TableCell>
+                <TableCell>Categoría</TableCell>
+                <TableCell>Acciones</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -204,16 +204,16 @@ export default function Catalogo() {
           </Table>
         </TableContainer>
 
-        {/* Dialog for adding product */}
+        {/* Dialog para agregar producto */}
         <Dialog open={dialogOpen} onClose={handleDialogClose}>
-          <DialogTitle>Add Product</DialogTitle>
+          <DialogTitle>Agregar Producto</DialogTitle>
           <DialogContent>
-            <DialogContentText>Enter the details of the new product you want to add.</DialogContentText>
+            <DialogContentText>Ingrese los detalles del nuevo producto que desea agregar.</DialogContentText>
             <TextField
               autoFocus
               margin="dense"
               name="name"
-              label="Product Name"
+              label="Nombre del Producto"
               fullWidth
               variant="outlined"
               value={newProduct.name}
@@ -222,7 +222,7 @@ export default function Catalogo() {
             <TextField
               margin="dense"
               name="price"
-              label="Price"
+              label="Precio"
               fullWidth
               variant="outlined"
               value={newProduct.price}
@@ -231,7 +231,7 @@ export default function Catalogo() {
             <TextField
               margin="dense"
               name="description"
-              label="Description"
+              label="Descripción"
               fullWidth
               variant="outlined"
               value={newProduct.description}
@@ -247,7 +247,7 @@ export default function Catalogo() {
             >
               {/* Opción por defecto */}
               <MenuItem value="">
-                Select a category
+                Selecciona una categoría
               </MenuItem>
               
               {/* Otras categorías */}
@@ -261,7 +261,7 @@ export default function Catalogo() {
             <TextField
               margin="dense"
               name="imageUrl"
-              label="Image URL"
+              label="URL de la Imagen"
               fullWidth
               variant="outlined"
               value={newProduct.imageUrl}
@@ -270,24 +270,24 @@ export default function Catalogo() {
           </DialogContent>
           <DialogActions>
             <Button onClick={handleDialogClose} color="primary">
-              Cancel
+              Cancelar
             </Button>
             <Button onClick={handleAddProduct} color="primary">
-              Add
+              Agregar
             </Button>
           </DialogActions>
         </Dialog>
 
-        {/* Dialog for adding category */}
+        {/* Dialog para agregar categoría */}
         <Dialog open={categoryDialogOpen} onClose={handleCategoryDialogClose}>
-          <DialogTitle>Add Category</DialogTitle>
+          <DialogTitle>Agregar Categoría</DialogTitle>
           <DialogContent>
-            <DialogContentText>Enter the name of the new category you want to add.</DialogContentText>
+            <DialogContentText>Ingrese el nombre de la nueva categoría que desea agregar.</DialogContentText>
             <TextField
               autoFocus
               margin="dense"
               name="category"
-              label="Category Name"
+              label="Nombre de la Categoría"
               fullWidth
               variant="outlined"
               value={newCategory}
@@ -296,10 +296,10 @@ export default function Catalogo() {
           </DialogContent>
           <DialogActions>
             <Button onClick={handleCategoryDialogClose} color="primary">
-              Cancel
+              Cancelar
             </Button>
             <Button onClick={handleAddCategory} color="primary">
-              Add
+              Agregar
             </Button>
           </DialogActions>
         </Dialog>
