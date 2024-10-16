@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import {
   AppBar,
   Toolbar,
@@ -35,18 +36,41 @@ export default function Catalogo() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
-  const [products, setProducts] = useState([
-    { name: "Comida para Perros", price: "$20", description: "Comida nutritiva para perros", category: "Comida", imageUrl: "https://example.com/dogfood.jpg" },
-    { name: "Juguete para Gatos", price: "$10", description: "Juguete divertido para gatos", category: "Juguetes", imageUrl: "https://example.com/cattoy.jpg" },
-  ]);
+  const [products, setProducts] = useState([]);
   const [newProduct, setNewProduct] = useState({
-    name: "",
-    price: "",
-    description: "",
-    category: "",
-    imageUrl: "",
+    nombre_producto: "",
+    precio: "",
+    cantidad: "",
+    descripcion: "",
+    categoria: "",
+    ruta: "",
   });
-  const [categories, setCategories] = useState(["Categoría 1", "Categoría 2", "Categoría 3"]);
+  const [categories, setCategories] = useState([
+    { name: "Categoría 1", _id: "616a4f50c2bca25f842df6a8" },
+    { name: "Categoría 2", _id: "616a4f50c2bca25f842df6a9" }
+  ]);
+
+  useEffect(() => {
+    // Obtener categorías desde el backend
+    axios.get('http://localhost:3000/api/categoria')
+      .then(response => {
+        setCategories(response.data); // Guardar las categorías en el estado
+      })
+      .catch(error => {
+        console.error('Error al obtener categorías:', error);
+      });
+  
+    // Obtener productos desde el backend
+    axios.get('http://localhost:3000/api/inventario')
+      .then(response => {
+        setProducts(response.data); // Guardar los productos en el estado
+      })
+      .catch(error => {
+        console.error('Error al obtener productos:', error);
+      });
+  }, []);
+
+  
   const [newCategory, setNewCategory] = useState("");
 
   const navigate = useNavigate();
@@ -55,7 +79,6 @@ export default function Catalogo() {
     setSidebarOpen(!sidebarOpen);
   };
 
-  // Manejar la apertura/cierre del formulario de agregar producto
   const handleDialogOpen = () => {
     setDialogOpen(true);
   };
@@ -64,7 +87,6 @@ export default function Catalogo() {
     setDialogOpen(false);
   };
 
-  // Abrir el modal para agregar categoría
   const handleCategoryDialogOpen = () => {
     setCategoryDialogOpen(true);
   };
@@ -73,25 +95,59 @@ export default function Catalogo() {
     setCategoryDialogOpen(false);
   };
 
-  // Manejar los cambios en los campos del formulario
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewProduct({ ...newProduct, [name]: value });
   };
 
-  // Manejar la adición del producto al catálogo
   const handleAddProduct = () => {
-    setProducts([...products, newProduct]);
-    handleDialogClose();
-    setNewProduct({ name: "", price: "", description: "", category: "", imageUrl: "" });
+    if (!newProduct.categoria) {
+      console.error('No se ha seleccionado una categoría');
+      return;
+    }
+
+    // Envía los datos al backend
+    axios.post('http://localhost:3000/api/inventario', newProduct)
+      .then(response => {
+        setProducts([...products, response.data]); // Agregar el nuevo producto a la lista
+        handleDialogClose();
+        setNewProduct({
+          nombre_producto: "",
+          precio: "",
+          descripcion: "",
+          categoria: "",
+          ruta: "",
+        });
+      })
+      .catch(error => {
+        if (error.response) {
+          // El servidor respondió con un código de estado fuera del rango 2xx
+          console.error('Error al agregar producto:', error.response.data);
+        } else if (error.request) {
+          // La solicitud fue hecha pero no se recibió respuesta
+          console.error('Error al agregar producto: No se recibió respuesta del servidor', error.request);
+        } else {
+          // Algo pasó al configurar la solicitud que desencadenó un error
+          console.error('Error al agregar producto:', error.message);
+        }
+      });
   };
 
-  // Manejar la adición de una nueva categoría
+
   const handleAddCategory = () => {
-    setCategories([...categories, newCategory]);
-    setNewCategory("");
-    handleCategoryDialogClose();
-  };
+    const categoryToSend = { nombre: newCategory }; 
+    
+    axios.post('http://localhost:3000/api/categoria', categoryToSend)
+      .then(response => {
+        setCategories([...categories, response.data]); 
+        setNewCategory("");
+        handleCategoryDialogClose();
+      })
+      .catch(error => {
+        console.error('Error al agregar categoría:', error);
+      });
+  };  
+  
 
   return (
     <Box sx={{ display: "flex" }}>
@@ -175,6 +231,7 @@ export default function Catalogo() {
                 <TableCell>Imagen</TableCell>
                 <TableCell>Nombre</TableCell>
                 <TableCell>Precio</TableCell>
+                <TableCell>Cantidad</TableCell>
                 <TableCell>Descripción</TableCell>
                 <TableCell>Categoría</TableCell>
                 <TableCell>Acciones</TableCell>
@@ -184,12 +241,13 @@ export default function Catalogo() {
               {products.map((product, index) => (
                 <TableRow key={index}>
                   <TableCell>
-                    <img src={product.imageUrl} alt={product.name} style={{ width: "50px", height: "50px", objectFit: "cover" }} />
+                    <img src={product.ruta} alt={product.nombre_producto} style={{ width: "50px", height: "50px", objectFit: "cover" }} />
                   </TableCell>
-                  <TableCell>{product.name}</TableCell>
-                  <TableCell>{product.price}</TableCell>
-                  <TableCell>{product.description}</TableCell>
-                  <TableCell>{product.category}</TableCell>
+                  <TableCell>{product.nombre_producto}</TableCell>
+                  <TableCell>{product.precio}</TableCell>
+                  <TableCell>{product.cantidad}</TableCell> 
+                  <TableCell>{product.descripcion}</TableCell>
+                  <TableCell>{product.categoria?.nombre}</TableCell> 
                   <TableCell>
                     <IconButton color="primary">
                       <Edit />
@@ -212,59 +270,64 @@ export default function Catalogo() {
             <TextField
               autoFocus
               margin="dense"
-              name="name"
+              name="nombre_producto"
               label="Nombre del Producto"
               fullWidth
               variant="outlined"
-              value={newProduct.name}
+              value={newProduct.nombre_producto}
               onChange={handleInputChange}
             />
             <TextField
               margin="dense"
-              name="price"
+              name="precio"
               label="Precio"
               fullWidth
               variant="outlined"
-              value={newProduct.price}
+              value={newProduct.precio}
               onChange={handleInputChange}
             />
             <TextField
               margin="dense"
-              name="description"
+              name="cantidad"
+              label="Cantidad"
+              fullWidth
+              variant="outlined"
+              value={newProduct.cantidad}
+              onChange={handleInputChange}
+            />
+            <TextField
+              margin="dense"
+              name="descripcion"
               label="Descripción"
               fullWidth
               variant="outlined"
-              value={newProduct.description}
+              value={newProduct.descripcion}
               onChange={handleInputChange}
             />
             <Select
               fullWidth
               margin="dense"
-              name="category"
-              value={newProduct.category}
+              name="categoria"
+              value={newProduct.categoria}
               onChange={handleInputChange}
               displayEmpty
             >
-              {/* Opción por defecto */}
               <MenuItem value="">
                 Selecciona una categoría
               </MenuItem>
-              
-              {/* Otras categorías */}
-              {categories.map((category, index) => (
-                <MenuItem key={index} value={category}>
-                  {category}
+              {categories.map((category) => (
+                <MenuItem key={category._id} value={category._id}>
+                  {category.nombre} {/* Mostrar el nombre de la categoría */}
                 </MenuItem>
               ))}
-            </Select> 
-
+            </Select>
             <TextField
               margin="dense"
-              name="imageUrl"
+              name="ruta"
               label="URL de la Imagen"
               fullWidth
               variant="outlined"
-              value={newProduct.imageUrl}
+              value={newProduct.ruta}
               onChange={handleInputChange}
             />
           </DialogContent>
