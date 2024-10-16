@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from "react";
+import React, { useState } from "react";
 import {
   AppBar,
   Toolbar,
@@ -35,29 +35,21 @@ export default function Catalogo() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState([
+    { name: "Comida para Perros", price: "$20", description: "Comida nutritiva para perros", category: "Comida", imageUrl: "https://example.com/dogfood.jpg" },
+    { name: "Juguete para Gatos", price: "$10", description: "Juguete divertido para gatos", category: "Juguetes", imageUrl: "https://example.com/cattoy.jpg" },
+  ]);
   const [newProduct, setNewProduct] = useState({
-    nombre_producto: "",
-    categoria: "",
-    cantidad: 10,
-    precio: 0,
-    ruta: "",
-    descripcion: "",
+    name: "",
+    price: "",
+    description: "",
+    category: "",
+    imageUrl: "",
   });
   const [categories, setCategories] = useState(["Categoría 1", "Categoría 2", "Categoría 3"]);
   const [newCategory, setNewCategory] = useState("");
 
   const navigate = useNavigate();
-
-  useEffect(() => {
-    fetch("http://localhost:3000/api/inventario/productos")
-      .then(response => response.json())
-      .then(data => {
-        setProducts(data);
-        console.log("Fetched products:", data); // Imprimir los productos en la consola
-      })
-      .catch(error => console.error("Error fetching products:", error));
-  }, []);
 
   const toggleDrawer = () => {
     setSidebarOpen(!sidebarOpen);
@@ -88,36 +80,17 @@ export default function Catalogo() {
   };
 
   // Manejar la adición del producto al catálogo
-  // const handleAddProduct = () => {
-  //   setProducts([...products, newProduct]);
-  //   handleDialogClose();
-  //   setNewProduct({ name: "", price: "", description: "", category: "", imageUrl: "" });
-  // };
   const handleAddProduct = () => {
-    const updatedProduct = { ...newProduct, categoria: "" };
-    console.log(updatedProduct);
-    
-    fetch("http://localhost:3000/api/inventario/crear-producto", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(updatedProduct),
-    })
-      .then(response => response.json())
-      .then(data => {
-        setProducts([...products, data]);
-        setNewProduct({
-          nombre_producto: "",
-          categoria: "",
-          cantidad: 0,
-          precio: 0,
-          ruta: "",
-          descripcion: "",
-        });
-        setDialogOpen(false);
-      })
-      .catch(error => console.error("Error adding product:", error));
+    setProducts([...products, newProduct]);
+    handleDialogClose();
+    setNewProduct({ name: "", price: "", description: "", category: "", imageUrl: "" });
+  };
+
+  // Manejar la adición de una nueva categoría
+  const handleAddCategory = () => {
+    setCategories([...categories, newCategory]);
+    setNewCategory("");
+    handleCategoryDialogClose();
   };
   const handleDeleteProduct = (productId) => {
     console.log("Deleting product with ID:", productId);
@@ -134,12 +107,7 @@ export default function Catalogo() {
       .catch(error => console.error("Error deleting product:", error));
   };
 
-  // Manejar la adición de una nueva categoría
-  const handleAddCategory = () => {
-    setCategories([...categories, newCategory]);
-    setNewCategory("");
-    handleCategoryDialogClose();
-  };
+
 
   return (
     <Box sx={{ display: "flex" }}>
@@ -232,12 +200,12 @@ export default function Catalogo() {
               {products.map((product, index) => (
                 <TableRow key={index}>
                   <TableCell>
-                    <img src={product.ruta} alt={product.name} style={{ width: "50px", height: "50px", objectFit: "cover" }} />
+                    <img src={product.imageUrl} alt={product.name} style={{ width: "50px", height: "50px", objectFit: "cover" }} />
                   </TableCell>
-                  <TableCell>{product.nombre_producto}</TableCell>
-                  <TableCell>{product.precio}</TableCell>
-                  <TableCell>{product.descripcion}</TableCell>
-                  <TableCell>{product.categoria}</TableCell>
+                  <TableCell>{product.name}</TableCell>
+                  <TableCell>{product.price}</TableCell>
+                  <TableCell>{product.description}</TableCell>
+                  <TableCell>{product.category}</TableCell>
                   <TableCell>
                     <IconButton color="primary">
                       <Edit />
@@ -260,7 +228,7 @@ export default function Catalogo() {
             <TextField
               autoFocus
               margin="dense"
-              name="nombre_producto"
+              name="name"
               label="Nombre del Producto"
               fullWidth
               variant="outlined"
@@ -269,7 +237,7 @@ export default function Catalogo() {
             />
             <TextField
               margin="dense"
-              name="precio"
+              name="price"
               label="Precio"
               fullWidth
               variant="outlined"
@@ -278,7 +246,7 @@ export default function Catalogo() {
             />
             <TextField
               margin="dense"
-              name="descripcion"
+              name="description"
               label="Descripción"
               fullWidth
               variant="outlined"
@@ -288,7 +256,7 @@ export default function Catalogo() {
             <Select
               fullWidth
               margin="dense"
-              name="categoria"
+              name="category"
               value={newProduct.category}
               onChange={handleInputChange}
               displayEmpty
@@ -308,7 +276,7 @@ export default function Catalogo() {
 
             <TextField
               margin="dense"
-              name="ruta"
+              name="imageUrl"
               label="URL de la Imagen"
               fullWidth
               variant="outlined"
