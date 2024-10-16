@@ -22,10 +22,10 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { useNavigate } from "react-router-dom"; // Importa useNavigate
 
 const salesData = [
-  { name: "Jan", sales: 4000 },
+  { name: "Ene", sales: 4000 },
   { name: "Feb", sales: 3000 },
   { name: "Mar", sales: 5000 },
-  { name: "Apr", sales: 4500 },
+  { name: "Abr", sales: 4500 },
   { name: "May", sales: 6000 },
   { name: "Jun", sales: 5500 },
 ];
@@ -63,7 +63,7 @@ export default function AdminDashboard() {
           </IconButton>
           {/* <Button color="inherit" onClick={handleLogout}>Cerrar sesión</Button> */}
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            Dashboard
+            Panel de Administración
           </Typography>
           <IconButton color="inherit">
             <Notifications />
@@ -92,31 +92,31 @@ export default function AdminDashboard() {
               <ListItemIcon>
                 <Home />
               </ListItemIcon>
-              {sidebarOpen && <ListItemText primary="Home" />}
+              {sidebarOpen && <ListItemText primary="Inicio" />}
             </ListItem>
             <ListItem button onClick={() => handleNavigation("/users")}>
               <ListItemIcon>
                 <People />
               </ListItemIcon>
-              {sidebarOpen && <ListItemText primary="Users" />}
+              {sidebarOpen && <ListItemText primary="Usuarios" />}
             </ListItem>
             <ListItem button onClick={() => handleNavigation("/catalogAdmin")}>
               <ListItemIcon>
                 <Inventory />
               </ListItemIcon>
-              {sidebarOpen && <ListItemText primary="Catalog" />}
+              {sidebarOpen && <ListItemText primary="Catálogo" />}
             </ListItem>
             <ListItem button onClick={() => handleNavigation("/orders")}>
               <ListItemIcon>
                 <ShoppingCart />
               </ListItemIcon>
-              {sidebarOpen && <ListItemText primary="Orders" />}
+              {sidebarOpen && <ListItemText primary="Órdenes" />}
             </ListItem>
             <ListItem button onClick={() => handleNavigation("/settings")}>
               <ListItemIcon>
                 <Settings />
               </ListItemIcon>
-              {sidebarOpen && <ListItemText primary="Settings" />}
+              {sidebarOpen && <ListItemText primary="Configuración" />}
             </ListItem>
           </List>
         </Box>
@@ -130,12 +130,12 @@ export default function AdminDashboard() {
           <Grid item xs={12} sm={6} md={3}>
             <Card sx={{ height: "100%" }}>
               <CardContent>
-                <Typography variant="subtitle1">Registered Users</Typography>
+                <Typography variant="subtitle1">Usuarios Registrados</Typography>
                 <Typography variant="h4" color="#CA6DF2">
                   1,234
                 </Typography>
                 <Typography variant="caption" color="textSecondary">
-                  +20% from last month
+                  +20% comparado con el mes pasado
                 </Typography>
               </CardContent>
             </Card>
@@ -143,12 +143,12 @@ export default function AdminDashboard() {
           <Grid item xs={12} sm={6} md={3}>
             <Card sx={{ height: "100%" }}>
               <CardContent>
-                <Typography variant="subtitle1">Orders Processed</Typography>
+                <Typography variant="subtitle1">Órdenes Procesadas</Typography>
                 <Typography variant="h4" color="#CA6DF2">
                   345
                 </Typography>
                 <Typography variant="caption" color="textSecondary">
-                  +15% from last week
+                  +15% comparado con la semana pasada
                 </Typography>
               </CardContent>
             </Card>
@@ -156,12 +156,12 @@ export default function AdminDashboard() {
           <Grid item xs={12} sm={6} md={3}>
             <Card sx={{ height: "100%" }}>
               <CardContent>
-                <Typography variant="subtitle1">Available Products</Typography>
+                <Typography variant="subtitle1">Productos Disponibles</Typography>
                 <Typography variant="h4" color="#CA6DF2">
                   789
                 </Typography>
                 <Typography variant="caption" color="textSecondary">
-                  +5 new products added
+                  +5 nuevos productos agregados
                 </Typography>
               </CardContent>
             </Card>
@@ -169,12 +169,12 @@ export default function AdminDashboard() {
           <Grid item xs={12} sm={6} md={3}>
             <Card sx={{ height: "100%" }}>
               <CardContent>
-                <Typography variant="subtitle1">Low Inventory Products</Typography>
+                <Typography variant="subtitle1">Productos con Inventario Bajo</Typography>
                 <Typography variant="h4" color="error">
                   23
                 </Typography>
                 <Typography variant="caption" color="textSecondary">
-                  Requires immediate attention
+                  Requiere atención inmediata
                 </Typography>
               </CardContent>
             </Card>
@@ -184,7 +184,7 @@ export default function AdminDashboard() {
         {/* Sales Overview Chart */}
         <Card sx={{ mt: 4 }}>
           <CardContent>
-            <Typography variant="h6">Sales Overview</Typography>
+            <Typography variant="h6">Resumen de Ventas</Typography>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={salesData}>
                 <CartesianGrid strokeDasharray="3 3" />
