@@ -3,15 +3,22 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import Cookies from 'js-cookie';
 import axios from 'axios';
-import Home from './components/Home';
+import "./App.css";
 import Perfil from './components/client/Perfil';
 import AdminDashboard from './components/admin/AdminDashboard';
 import Catalogo from './components/admin/Catalogo';
 import ClienteDashboard from './components/client/ClienteDashboard';
+import { Typography, Box, Snackbar, Alert } from '@mui/material';
+import { styled } from '@mui/system';
+
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userRole, setUserRole] = useState(null);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+
 
   useEffect(() => {
     const token = Cookies.get('token');
@@ -38,6 +45,11 @@ const App = () => {
       setIsLoggedIn(true);
       setUserRole(res.data.user.rol);
 
+      // Mostrar mensaje de éxito
+      setSnackbarMessage('Inicio de sesión exitoso');
+      setSnackbarSeverity('success');
+      setOpenSnackbar(true);
+
       // Redirigir al perfil si es un nuevo usuario
       if (res.status === 201) {
         alert('Complete su perfil.');
@@ -52,7 +64,10 @@ const App = () => {
       }
     } catch (error) {
       console.error('Error al iniciar sesión:', error);
-      alert('Error al iniciar sesión. Por favor, inténtelo de nuevo.');
+       // Mostrar mensaje de error
+       setSnackbarMessage('Error al autenticar con Google');
+       setSnackbarSeverity('error');
+       setOpenSnackbar(true);
     }
   };
 
@@ -71,8 +86,41 @@ const App = () => {
 
   const handleLoginFailure = () => {
     console.log('Error al iniciar sesión con Google.');
-    alert('Error al iniciar sesión con Google. Inténtelo nuevamente.');
+    setSnackbarMessage('Error al iniciar sesión con Google. Inténtelo nuevamente.');
+    setSnackbarSeverity('error');
+    setOpenSnackbar(true);
   };
+
+  const handleCloseSnackbar = () => {
+    setOpenSnackbar(false);
+  };
+
+  // Styled components
+const BackgroundImage = styled(Box)({
+  backgroundImage: 'url(/assets/bg.svg)', 
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  height: '100vh',
+  width: '100vw',
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  alignItems: 'center',
+});
+
+const Logo = styled('img')({
+  position: 'absolute',
+  top: '10vmin',
+  right: '30vmin',
+  height: '30vmin',
+});
+
+const ContentBox = styled(Box)({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: '20px',
+});
 
   return (
     <GoogleOAuthProvider clientId={'197152996427-tnahvkham0qkj09onm3a82mo3n6b0s2k.apps.googleusercontent.com'}>
@@ -89,13 +137,18 @@ const App = () => {
                   <Navigate to="/clienteapp" />
                 )
               ) : (
-                <div>
-                  <h2>Iniciar sesión con Google</h2>
+                <BackgroundImage>
+                <Logo src="/logosps.svg" alt="Logo" classname="mi-logo"/> 
+                <ContentBox>
+                  <Typography variant="h4" style={{ color: '#B86AD9' }}>
+                    Inicia sesión con Google
+                  </Typography>
                   <GoogleLogin
                     onSuccess={handleLoginSuccess}
                     onError={handleLoginFailure}
                   />
-                </div>
+                </ContentBox>
+              </BackgroundImage>
               )
             }
           />
@@ -113,9 +166,20 @@ const App = () => {
           {/* Redirección a Home si se accede a una ruta no válida */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
+       {/* Snackbar para mostrar mensajes de éxito o error */}
+       <Snackbar
+          open={openSnackbar}
+          autoHideDuration={6000} // Duración del mensaje
+          onClose={handleCloseSnackbar}
+        >
+          <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
       </Router>
     </GoogleOAuthProvider>
   );
 };
 
 export default App;
+

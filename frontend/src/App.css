@@ -28,11 +28,12 @@
   color: #61dafb;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+
+.mi-logo {
+  width: 60vh;
+  height: 60vh;
+}
+
+h2 {
+  color: #2D2D2D;
 }
