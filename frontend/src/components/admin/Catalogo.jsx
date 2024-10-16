@@ -25,6 +25,8 @@ import {
   DialogContentText,
   DialogTitle,
   TextField,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import { Menu as MenuIcon, Home, People, Inventory, ShoppingCart, Settings, Edit, Delete } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
@@ -32,6 +34,7 @@ import { useNavigate } from "react-router-dom";
 export default function Catalogo() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [products, setProducts] = useState([
     { name: "Dog Food", price: "$20", description: "Nutritious food for dogs", category: "Food", imageUrl: "https://example.com/dogfood.jpg" },
     { name: "Cat Toy", price: "$10", description: "Fun toy for cats", category: "Toys", imageUrl: "https://example.com/cattoy.jpg" },
@@ -43,6 +46,8 @@ export default function Catalogo() {
     category: "",
     imageUrl: "",
   });
+  const [categories, setCategories] = useState(["Category 1", "Category 2", "Category 3"]);
+  const [newCategory, setNewCategory] = useState("");
 
   const navigate = useNavigate();
 
@@ -59,6 +64,15 @@ export default function Catalogo() {
     setDialogOpen(false);
   };
 
+  // Abrir el modal para agregar categoría
+  const handleCategoryDialogOpen = () => {
+    setCategoryDialogOpen(true);
+  };
+
+  const handleCategoryDialogClose = () => {
+    setCategoryDialogOpen(false);
+  };
+
   // Manejar los cambios en los campos del formulario
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -72,9 +86,11 @@ export default function Catalogo() {
     setNewProduct({ name: "", price: "", description: "", category: "", imageUrl: "" });
   };
 
-  // Manejar navegación
-  const handleNavigation = (path) => {
-    navigate(path);
+  // Manejar la adición de una nueva categoría
+  const handleAddCategory = () => {
+    setCategories([...categories, newCategory]);
+    setNewCategory("");
+    handleCategoryDialogClose();
   };
 
   return (
@@ -91,6 +107,9 @@ export default function Catalogo() {
           </Typography>
           <Button variant="contained" color="primary" onClick={handleDialogOpen}>
             + ADD PRODUCT
+          </Button>
+          <Button variant="contained" color="secondary" onClick={handleCategoryDialogOpen} sx={{ ml: 2 }}>
+            + ADD CATEGORY
           </Button>
         </Toolbar>
       </AppBar>
@@ -112,31 +131,31 @@ export default function Catalogo() {
         <Toolbar />
         <Box sx={{ overflow: "auto" }}>
           <List>
-            <ListItem button onClick={() => handleNavigation("/dashboard-admin")}>
+            <ListItem button onClick={() => navigate("/dashboard-admin")}>
               <ListItemIcon>
                 <Home />
               </ListItemIcon>
               {sidebarOpen && <ListItemText primary="Dashboard" />}
             </ListItem>
-            <ListItem button onClick={() => handleNavigation("/users")}>
+            <ListItem button onClick={() => navigate("/users")}>
               <ListItemIcon>
                 <People />
               </ListItemIcon>
               {sidebarOpen && <ListItemText primary="Users" />}
             </ListItem>
-            <ListItem button onClick={() => handleNavigation("/catalog")}>
+            <ListItem button onClick={() => navigate("/catalog")}>
               <ListItemIcon>
                 <Inventory />
               </ListItemIcon>
               {sidebarOpen && <ListItemText primary="Catalog" />}
             </ListItem>
-            <ListItem button onClick={() => handleNavigation("/orders")}>
+            <ListItem button onClick={() => navigate("/orders")}>
               <ListItemIcon>
                 <ShoppingCart />
               </ListItemIcon>
               {sidebarOpen && <ListItemText primary="Orders" />}
             </ListItem>
-            <ListItem button onClick={() => handleNavigation("/settings")}>
+            <ListItem button onClick={() => navigate("/settings")}>
               <ListItemIcon>
                 <Settings />
               </ListItemIcon>
@@ -218,15 +237,27 @@ export default function Catalogo() {
               value={newProduct.description}
               onChange={handleInputChange}
             />
-            <TextField
+            <Select
+              fullWidth
               margin="dense"
               name="category"
-              label="Category"
-              fullWidth
-              variant="outlined"
               value={newProduct.category}
               onChange={handleInputChange}
-            />
+              displayEmpty
+            >
+              {/* Opción por defecto */}
+              <MenuItem value="">
+                Select a category
+              </MenuItem>
+              
+              {/* Otras categorías */}
+              {categories.map((category, index) => (
+                <MenuItem key={index} value={category}>
+                  {category}
+                </MenuItem>
+              ))}
+            </Select> 
+
             <TextField
               margin="dense"
               name="imageUrl"
@@ -242,6 +273,32 @@ export default function Catalogo() {
               Cancel
             </Button>
             <Button onClick={handleAddProduct} color="primary">
+              Add
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Dialog for adding category */}
+        <Dialog open={categoryDialogOpen} onClose={handleCategoryDialogClose}>
+          <DialogTitle>Add Category</DialogTitle>
+          <DialogContent>
+            <DialogContentText>Enter the name of the new category you want to add.</DialogContentText>
+            <TextField
+              autoFocus
+              margin="dense"
+              name="category"
+              label="Category Name"
+              fullWidth
+              variant="outlined"
+              value={newCategory}
+              onChange={(e) => setNewCategory(e.target.value)}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCategoryDialogClose} color="primary">
+              Cancel
+            </Button>
+            <Button onClick={handleAddCategory} color="primary">
               Add
             </Button>
           </DialogActions>
