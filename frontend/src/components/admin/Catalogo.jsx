@@ -105,6 +105,7 @@ export default function Catalogo() {
       console.error('No se ha seleccionado una categoría');
       return;
     }
+    console.log('Agregando producto:', newProduct);
 
     axios.post('http://localhost:3000/api/inventario', newProduct)
       .then(response => {
@@ -143,6 +144,22 @@ export default function Catalogo() {
         console.error('Error al agregar categoría:', error);
       });
   };
+  const handleDeleteProduct = (productId) => {
+    console.log("Deleting product with ID:", productId);
+    fetch(`http://localhost:3000/api/inventario/producto/${productId}`, {
+      method: "DELETE",
+    })
+      .then(response => {
+        if (response.ok) {
+          //Actualizar la lista de productos
+        } else {
+          console.error("Error deleting product:", response.statusText);
+        }
+      })
+      .catch(error => console.error("Error deleting product:", error));
+  };
+
+
 
   // Iniciar la edición de una categoría
   const handleEditClick = (category) => {
@@ -184,7 +201,8 @@ export default function Catalogo() {
 
   // Guardar los cambios de edición de un producto
   const handleProductSaveClick = (productId) => {
-    axios.put(`http://localhost:3000/api/inventario/${productId}`, editProductData)
+    console.log('Editando producto:', editProductData);
+    axios.put(`http://localhost:3000/api/inventario/producto/${productId}`, editProductData)
       .then(() => {
         const updatedProducts = products.map((prod) =>
           prod._id === productId ? { ...prod, ...editProductData } : prod

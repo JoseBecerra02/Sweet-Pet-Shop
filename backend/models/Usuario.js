@@ -6,7 +6,7 @@ const UsuarioSchema = new mongoose.Schema({
   correo: { type: String, required: true, unique: true, match: /.+\@.+\..+/ },
   nombre: { type: String, required: true },
   rol: { type: String, enum: ['cliente', 'admin'], default: 'cliente' },
-  estado: { type: String, enum: ['activo', 'inactivo'], default: 'activo' },
+  estado: { type: String, enum: ['activo', 'inactivo', 'suspendido'], default: 'activo' },
   telefono: { 
     type: String,
     validate: {
