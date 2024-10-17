@@ -22,7 +22,7 @@ const App = () => {
 
   useEffect(() => {
     const token = Cookies.get('token');
-    const role = Cookies.get('rol'); // Obtener el rol del usuario desde las cookies
+    const role = Cookies.get('rol'); 
     if (token && role) {
       setIsLoggedIn(true);
       setUserRole(role);
@@ -71,19 +71,6 @@ const App = () => {
     }
   };
 
-/*   const handleLogout = () => {
-    // Eliminar las cookies que contienen el token y el rol
-    Cookies.remove('token');
-    Cookies.remove('rol');
-
-    // Actualizar el estado de autenticación (puedes hacer esto en el estado principal)
-    setIsLoggedIn(false);
-    setUserRole(null);
-
-    // Redirigir a la página de inicio
-    window.location.href = '/';
-  }; */
-
   const handleLoginFailure = () => {
     console.log('Error al iniciar sesión con Google.');
     setSnackbarMessage('Error al iniciar sesión con Google. Inténtelo nuevamente.');
@@ -111,7 +98,7 @@ const BackgroundImage = styled(Box)({
 const Logo = styled('img')({
   position: 'absolute',
   top: '10vmin',
-  right: '30vmin',
+  right: '10vmin',
   height: '30vmin',
 });
 

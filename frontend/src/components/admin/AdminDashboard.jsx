@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import Cookies from 'js-cookie';
 import {
   AppBar,
   Toolbar,
@@ -14,9 +13,8 @@ import {
   Box,
   Card,
   CardContent,
-  Button,
-  Grid,
 } from "@mui/material";
+import Grid from '@mui/material/Grid2';
 import { Menu as MenuIcon, Notifications, Home, People, Inventory, ShoppingCart, Settings } from "@mui/icons-material";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useNavigate } from "react-router-dom"; // Importa useNavigate
@@ -38,15 +36,6 @@ export default function AdminDashboard() {
     setSidebarOpen(!sidebarOpen);
   };
 
-/*   const handleLogout = () => {
-    // Eliminar cookies
-    Cookies.remove('token');
-    Cookies.remove('rol');
-
-    // Redirigir al usuario a la página principal (login)
-    navigate('/');
-  };
- */
   // Manejar navegación
   const handleNavigation = (path) => {
     navigate(path);
