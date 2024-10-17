@@ -151,7 +151,36 @@ export default function Usuarios() {
         <Toolbar />
         <Box sx={{ overflow: "auto" }}>
           <List>
-            {/* Opciones de navegación aquí */}
+            <ListItem button onClick={() => navigate("/dashboard-admin")}>
+              <ListItemIcon>
+                <Home />
+              </ListItemIcon>
+              {sidebarOpen && <ListItemText primary="Dashboard" />}
+            </ListItem>
+            <ListItem button onClick={() => navigate("/users")}>
+              <ListItemIcon>
+                <People />
+              </ListItemIcon>
+              {sidebarOpen && <ListItemText primary="Usuarios" />}
+            </ListItem>
+            <ListItem button onClick={() => navigate("/catalogAdmin")}>
+              <ListItemIcon>
+                <Inventory />
+              </ListItemIcon>
+              {sidebarOpen && <ListItemText primary="Catálogo" />}
+            </ListItem>
+            <ListItem button onClick={() => navigate("/orders")}>
+              <ListItemIcon>
+                <ShoppingCart />
+              </ListItemIcon>
+              {sidebarOpen && <ListItemText primary="Órdenes" />}
+            </ListItem>
+            <ListItem button onClick={() => navigate("/settings")}>
+              <ListItemIcon>
+                <Settings />
+              </ListItemIcon>
+              {sidebarOpen && <ListItemText primary="Configuración" />}
+            </ListItem>
           </List>
         </Box>
       </Drawer>
