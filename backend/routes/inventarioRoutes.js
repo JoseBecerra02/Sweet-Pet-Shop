@@ -87,6 +87,34 @@ router.post('/crear-producto', async (req, res) => {
     res.status(500).json({ message: 'Error al crear el producto' });
   }
 });
+router.put('/producto/:id', async (req, res) => {
+  const { id } = req.params;
+  const { nombre_producto, categoria, cantidad, precio, ruta, descripcion } = req.body;
+
+  if (!nombre_producto || !categoria || !cantidad || !precio || !ruta) {
+    return res.status(400).json({ message: 'Todos los campos requeridos deben ser proporcionados' });
+  }
+
+  try {
+    const productoActualizado = await Inventario.findByIdAndUpdate(id, {
+      nombre_producto,
+      categoria,
+      cantidad,
+      precio,
+      ruta,
+      descripcion
+    }, { new: true });
+
+    if (!productoActualizado) {
+      return res.status(404).json({ message: 'Producto no encontrado' });
+    }
+
+    res.json(productoActualizado);
+  } catch (error) {
+    console.error('Error al actualizar el producto:', error);
+    res.status(500).json({ message: 'Error al actualizar el producto' });
+  }
+});
 router.get('/hola', (req, res) => {
   res.send('Hola Mundo');
 });
