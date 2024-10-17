@@ -13,8 +13,8 @@ import {
   Box,
   Card,
   CardContent,
-  Grid,
 } from "@mui/material";
+import Grid from '@mui/material/Grid2';
 import { Menu as MenuIcon, Notifications, Home, People, Inventory, ShoppingCart, Settings } from "@mui/icons-material";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useNavigate } from "react-router-dom"; // Importa useNavigate
@@ -50,6 +50,7 @@ export default function AdminDashboard() {
           <IconButton edge="start" color="inherit" onClick={toggleDrawer} sx={{ mr: 2 }}>
             <MenuIcon />
           </IconButton>
+          {/* <Button color="inherit" onClick={handleLogout}>Cerrar sesión</Button> */}
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             Panel de Administración
           </Typography>
