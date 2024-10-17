@@ -29,7 +29,7 @@ import {
   Select,
   MenuItem,
 } from "@mui/material";
-import { Menu as MenuIcon, Home, People, Inventory, ShoppingCart, Settings, Edit, Delete } from "@mui/icons-material";
+import { Menu as MenuIcon, Home, People, Inventory, ShoppingCart, Settings, Edit, Delete, Save } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 
 export default function Catalogo() {
@@ -45,10 +45,12 @@ export default function Catalogo() {
     categoria: "",
     ruta: "",
   });
-  const [categories, setCategories] = useState([
-    { name: "Categoría 1", _id: "616a4f50c2bca25f842df6a8" },
-    { name: "Categoría 2", _id: "616a4f50c2bca25f842df6a9" }
-  ]);
+  const [categories, setCategories] = useState([]);
+  const [newCategory, setNewCategory] = useState("");
+  const [editCategoryId, setEditCategoryId] = useState(null);
+  const [editCategoryName, setEditCategoryName] = useState("");
+  const [editProductId, setEditProductId] = useState(null);
+  const [editProductData, setEditProductData] = useState({});
 
   useEffect(() => {
     // Obtener categorías desde el backend
@@ -59,19 +61,15 @@ export default function Catalogo() {
       .catch(error => {
         console.error('Error al obtener categorías:', error);
       });
-  
-    // Obtener productos desde el backend
+
     axios.get('http://localhost:3000/api/inventario')
       .then(response => {
-        setProducts(response.data); // Guardar los productos en el estado
+        setProducts(response.data); 
       })
       .catch(error => {
         console.error('Error al obtener productos:', error);
       });
   }, []);
-
-  
-  const [newCategory, setNewCategory] = useState("");
 
   const navigate = useNavigate();
 
@@ -93,6 +91,8 @@ export default function Catalogo() {
 
   const handleCategoryDialogClose = () => {
     setCategoryDialogOpen(false);
+    setEditCategoryId(null);
+    setEditCategoryName("");
   };
 
   const handleInputChange = (e) => {
@@ -106,14 +106,14 @@ export default function Catalogo() {
       return;
     }
 
-    // Envía los datos al backend
     axios.post('http://localhost:3000/api/inventario', newProduct)
       .then(response => {
-        setProducts([...products, response.data]); // Agregar el nuevo producto a la lista
+        setProducts([...products, response.data]); 
         handleDialogClose();
         setNewProduct({
           nombre_producto: "",
           precio: "",
+          cantidad: "",
           descripcion: "",
           categoria: "",
           ruta: "",
@@ -121,18 +121,14 @@ export default function Catalogo() {
       })
       .catch(error => {
         if (error.response) {
-          // El servidor respondió con un código de estado fuera del rango 2xx
           console.error('Error al agregar producto:', error.response.data);
         } else if (error.request) {
-          // La solicitud fue hecha pero no se recibió respuesta
           console.error('Error al agregar producto: No se recibió respuesta del servidor', error.request);
         } else {
-          // Algo pasó al configurar la solicitud que desencadenó un error
           console.error('Error al agregar producto:', error.message);
         }
       });
   };
-
 
   const handleAddCategory = () => {
     const categoryToSend = { nombre: newCategory }; 
@@ -146,13 +142,75 @@ export default function Catalogo() {
       .catch(error => {
         console.error('Error al agregar categoría:', error);
       });
+  };
+
+  // Iniciar la edición de una categoría
+  const handleEditClick = (category) => {
+    setEditCategoryId(category._id);
+    setEditCategoryName(category.nombre);
+  };
+
+  // Guardar los cambios de edición de una categoría
+  const handleSaveClick = (categoryId) => {
+    axios.put(`http://localhost:3000/api/categoria/${categoryId}`, { nombre: editCategoryName })
+      .then(() => {
+        const updatedCategories = categories.map((cat) =>
+          cat._id === categoryId ? { ...cat, nombre: editCategoryName } : cat
+        );
+        setCategories(updatedCategories);
+        setEditCategoryId(null); // Finaliza la edición
+      })
+      .catch((error) => {
+        console.error('Error al editar categoría:', error);
+      });
+  };
+
+  // Eliminar una categoría
+  const handleCategoryDelete = (categoryId) => {
+    axios.delete(`http://localhost:3000/api/categoria/${categoryId}`)
+      .then(() => {
+        setCategories(categories.filter(cat => cat._id !== categoryId));
+      })
+      .catch(error => {
+        console.error('Error al eliminar categoría:', error);
+      });
+  };
+
+  // Iniciar la edición de un producto
+  const handleProductEditClick = (product) => {
+    setEditProductId(product._id);
+    setEditProductData({ ...product });
+  };
+
+  // Guardar los cambios de edición de un producto
+  const handleProductSaveClick = (productId) => {
+    axios.put(`http://localhost:3000/api/inventario/${productId}`, editProductData)
+      .then(() => {
+        const updatedProducts = products.map((prod) =>
+          prod._id === productId ? { ...prod, ...editProductData } : prod
+        );
+        setProducts(updatedProducts);
+        setEditProductId(null); 
+      })
+      .catch((error) => {
+        console.error('Error al editar producto:', error);
+      });
+  };
+
+  // Eliminar un producto
+  const handleProductDelete = (productId) => {
+    axios.delete(`http://localhost:3000/api/inventario/${productId}`)
+      .then(() => {
+        setProducts(products.filter(prod => prod._id !== productId));
+      })
+      .catch(error => {
+        console.error('Error al eliminar producto:', error);
+      });
   };  
-  
 
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
-      {/* Top AppBar */}
       <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, backgroundColor: "#ffffff", color: "#2D2D2D" }}>
         <Toolbar>
           <IconButton edge="start" color="inherit" onClick={toggleDrawer} sx={{ mr: 2 }}>
@@ -170,7 +228,6 @@ export default function Catalogo() {
         </Toolbar>
       </AppBar>
 
-      {/* Sidebar */}
       <Drawer
         variant="permanent"
         open={sidebarOpen}
@@ -221,7 +278,7 @@ export default function Catalogo() {
         </Box>
       </Drawer>
 
-      {/* Main Content */}
+      {/* Main Content - Tabla de Productos */}
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
         <Toolbar />
         <TableContainer component={Paper}>
@@ -243,22 +300,72 @@ export default function Catalogo() {
                   <TableCell>
                     <img src={product.ruta} alt={product.nombre_producto} style={{ width: "50px", height: "50px", objectFit: "cover" }} />
                   </TableCell>
-                  <TableCell>{product.nombre_producto}</TableCell>
-                  <TableCell>{product.precio}</TableCell>
-                  <TableCell>{product.cantidad}</TableCell> 
-                  <TableCell>{product.descripcion}</TableCell>
-                  <TableCell>{product.categoria?.nombre}</TableCell> 
                   <TableCell>
-                    <IconButton color="primary">
-                      <Edit />
-                    </IconButton>
-                    <IconButton color="secondary">
+                    {editProductId === product._id ? (
+                      <TextField
+                        value={editProductData.nombre_producto}
+                        onChange={(e) =>
+                          setEditProductData({ ...editProductData, nombre_producto: e.target.value })
+                        }
+                      />
+                    ) : (
+                      product.nombre_producto
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {editProductId === product._id ? (
+                      <TextField
+                        value={editProductData.precio}
+                        onChange={(e) =>
+                          setEditProductData({ ...editProductData, precio: e.target.value })
+                        }
+                      />
+                    ) : (
+                      product.precio
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {editProductId === product._id ? (
+                      <TextField
+                        value={editProductData.cantidad}
+                        onChange={(e) =>
+                          setEditProductData({ ...editProductData, cantidad: e.target.value })
+                        }
+                      />
+                    ) : (
+                      product.cantidad
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {editProductId === product._id ? (
+                      <TextField
+                        value={editProductData.descripcion}
+                        onChange={(e) =>
+                          setEditProductData({ ...editProductData, descripcion: e.target.value })
+                        }
+                      />
+                    ) : (
+                      product.descripcion
+                    )}
+                  </TableCell>
+                  <TableCell>{product.categoria?.nombre}</TableCell>
+                  <TableCell>
+                    {editProductId === product._id ? (
+                      <IconButton color="primary" onClick={() => handleProductSaveClick(product._id)}>
+                        <Save />
+                      </IconButton>
+                    ) : (
+                      <IconButton color="primary" onClick={() => handleProductEditClick(product)}>
+                        <Edit />
+                      </IconButton>
+                    )}
+                    <IconButton color="secondary" onClick={() => handleProductDelete(product._id)}>
                       <Delete />
                     </IconButton>
                   </TableCell>
                 </TableRow>
               ))}
-            </TableBody>
+            </TableBody>  
           </Table>
         </TableContainer>
 
@@ -317,7 +424,7 @@ export default function Catalogo() {
               </MenuItem>
               {categories.map((category) => (
                 <MenuItem key={category._id} value={category._id}>
-                  {category.nombre} {/* Mostrar el nombre de la categoría */}
+                  {category.nombre}
                 </MenuItem>
               ))}
             </Select>
@@ -341,28 +448,69 @@ export default function Catalogo() {
           </DialogActions>
         </Dialog>
 
-        {/* Dialog para agregar categoría */}
+        {/* Nueva tabla de Categorías */}
+        <TableContainer component={Paper} sx={{ mt: 4 }}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Nombre de la Categoría</TableCell>
+                <TableCell>Acciones</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {categories.map((category, index) => (
+                <TableRow key={index}>
+                  <TableCell>
+                    {editCategoryId === category._id ? (
+                      <TextField
+                        value={editCategoryName}
+                        onChange={(e) => setEditCategoryName(e.target.value)}
+                      />
+                    ) : (
+                      category.nombre
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {editCategoryId === category._id ? (
+                      <IconButton color="primary" onClick={() => handleSaveClick(category._id)}>
+                        <Save />
+                      </IconButton>
+                    ) : (
+                      <IconButton color="primary" onClick={() => handleEditClick(category)}>
+                        <Edit />
+                      </IconButton>
+                    )}
+                    <IconButton color="secondary" onClick={() => handleCategoryDelete(category._id)}>
+                      <Delete />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        {/* Dialog para agregar/editar categoría */}
         <Dialog open={categoryDialogOpen} onClose={handleCategoryDialogClose}>
-          <DialogTitle>Agregar Categoría</DialogTitle>
+          <DialogTitle>{editCategoryId ? "Editar Categoría" : "Agregar Categoría"}</DialogTitle>
           <DialogContent>
-            <DialogContentText>Ingrese el nombre de la nueva categoría que desea agregar.</DialogContentText>
+            <DialogContentText>{editCategoryId ? "Modifica el nombre de la categoría" : "Ingrese el nombre de la nueva categoría"}</DialogContentText>
             <TextField
               autoFocus
               margin="dense"
-              name="category"
               label="Nombre de la Categoría"
               fullWidth
               variant="outlined"
-              value={newCategory}
-              onChange={(e) => setNewCategory(e.target.value)}
+              value={editCategoryId ? editCategoryName : newCategory}
+              onChange={(e) => (editCategoryId ? setEditCategoryName(e.target.value) : setNewCategory(e.target.value))}
             />
           </DialogContent>
           <DialogActions>
             <Button onClick={handleCategoryDialogClose} color="primary">
               Cancelar
             </Button>
-            <Button onClick={handleAddCategory} color="primary">
-              Agregar
+            <Button onClick={editCategoryId ? handleSaveClick : handleAddCategory} color="primary">
+              {editCategoryId ? "Guardar" : "Agregar"}
             </Button>
           </DialogActions>
         </Dialog>

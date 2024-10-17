@@ -6,7 +6,6 @@ const router = express.Router();
 // Ruta para obtener todos los productos del inventario con las categorías populadas
 router.get('/', async (req, res) => {
   try {
-    // Agregamos .populate para obtener el campo 'nombre' de la categoría referenciada
     const productos = await Inventario.find().populate('categoria', 'nombre');
     res.json(productos);
   } catch (err) {
