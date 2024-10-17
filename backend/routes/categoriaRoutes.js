@@ -34,4 +34,30 @@ router.get('/', async (req, res) => {
     }
 });
 
+// Actualizar una categoría por ID
+router.put('/:id', async (req, res) => {
+    try {
+        const categoriaActualizada = await Categoria.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+        if (!categoriaActualizada) {
+            return res.status(404).json({ message: 'Categoría no encontrada' });
+        }
+        res.json(categoriaActualizada);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+// Eliminar una categoría por ID
+router.delete('/:id', async (req, res) => {
+    try {
+        const categoriaEliminada = await Categoria.findByIdAndDelete(req.params.id);
+        if (!categoriaEliminada) {
+            return res.status(404).json({ message: 'Categoría no encontrada' });
+        }
+        res.status(204).send();
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 module.exports = router;
