@@ -3,6 +3,7 @@
 const { OAuth2Client } = require('google-auth-library');
 const jwt = require('jsonwebtoken');
 const Usuario = require('../models/Usuario');
+const transporter = require('../config/mailer');
 
 const client = new OAuth2Client(process.env.GOOGLE_OAUTH_CLIENT_ID);
 
@@ -31,6 +32,7 @@ const googleLoginBackend = async (req, res) => {
         'stefhania.noguera@correounivalle.edu.co',
         'maria.paula.giraldo@correounivalle.edu.co',
         'jose.becerra@correounivalle.edu.co',
+        'SweetPetSchi@gmail.com',
       ];
       const rol = adminEmails.includes(email) ? 'admin' : 'cliente';
 
@@ -41,6 +43,15 @@ const googleLoginBackend = async (req, res) => {
         estado: 'activo',
       });
       await user.save();
+
+      // Enviar correo de bienvenida
+      await transporter.sendMail({
+        from: '"Welcome SweetPet Shop 🐶" <SweetPetSchi@gmail.com>', // Dirección del remitente
+        to: user.correo, // Dirección del destinatario (desde la base de datos)
+        subject: "Welcome SweetPet Shop", // Asunto del correo
+        html: "<b>¡Hola, bienvenido a SweetPet Shop!</b><p>Estamos encantados de que te hayas unido a nuestra comunidad.</p>", // Contenido HTML
+      });
+
     }
 
     // Generar el token JWT
@@ -49,13 +60,13 @@ const googleLoginBackend = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: '3d' }
     );
-    
+
     // Configurar la cookie con SameSite y Secure
     res.cookie('token', jwtToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', 
-      sameSite: 'Lax', 
-      maxAge: 3 * 24 * 60 * 60 * 1000, 
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'Lax',
+      maxAge: 3 * 24 * 60 * 60 * 1000,
     });
 
     // Devolver el token en la respuesta
