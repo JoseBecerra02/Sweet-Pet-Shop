@@ -81,25 +81,25 @@ export default function ClienteDashboard() {
               <ListItemIcon>
                 <Home />
               </ListItemIcon>
-              {sidebarOpen && <ListItemText primary="Catalog" />}
+              {sidebarOpen && <ListItemText primary="Catálogo" />}
             </ListItem>
             <ListItem button onClick={() => setSelectedSection('carrito')}>
               <ListItemIcon>
                 <ShoppingCart />
               </ListItemIcon>
-              {sidebarOpen && <ListItemText primary="Cart" />}
+              {sidebarOpen && <ListItemText primary="Carrito" />}
             </ListItem>
             <ListItem button onClick={() => setSelectedSection('historialPedidos')}>
               <ListItemIcon>
                 <Inventory />
               </ListItemIcon>
-              {sidebarOpen && <ListItemText primary="Orders" />}
+              {sidebarOpen && <ListItemText primary="Órdenes" />}
             </ListItem>
             <ListItem button onClick={() => setSelectedSection('perfil')}>
               <ListItemIcon>
                 <Person />
               </ListItemIcon>
-              {sidebarOpen && <ListItemText primary="Profile" />}
+              {sidebarOpen && <ListItemText primary="Perfil" />}
             </ListItem>
           </List>
         </Box>

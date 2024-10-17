@@ -5,6 +5,8 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
 const connectDB = require('./database');
+const inventarioRoutes = require('../routes/inventarioRoutes'); // Nueva ruta
+const categoriaRoutes = require('../routes/categoriaRoutes'); // Asegúrate de tener esta línea
 
 const app = express();
 
@@ -32,6 +34,8 @@ const usuarioRoutes = require('../routes/usuarioRoutes');
 
 // Usar rutas
 app.use('/api/usuarios', usuarioRoutes);
+app.use('/api/inventario', inventarioRoutes); 
+app.use('/api/categoria', categoriaRoutes); // Asegúrate de que esta línea exista
 
 // Manejo de errores global
 app.use((err, req, res, next) => {

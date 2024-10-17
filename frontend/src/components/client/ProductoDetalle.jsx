@@ -1,19 +1,20 @@
+
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { Box, Typography, Card, CardMedia, CardContent, Button } from '@mui/material';
 
 const productData = {
   id: 1,
-  name: 'Dog Food',
+  name: 'Comida para Perros',
   price: 20,
-  description: 'Nutritious food for dogs',
+  description: 'Comida nutritiva para perros',
   imageUrl: 'https://via.placeholder.com/300',
-  category: 'Food'
+  category: 'Comida'
 };
 
 export default function ProductoDetalle() {
   const { id } = useParams();
-  // For simplicity, using static data here. This can be replaced with a fetch request.
+  // Para simplificar, se usan datos estáticos aquí. Esto se puede reemplazar con una solicitud fetch.
 
   return (
     <Box sx={{ padding: 3, marginTop: 8 }}>
@@ -29,7 +30,7 @@ export default function ProductoDetalle() {
           <Typography variant="h6" color="primary">${productData.price}</Typography>
           <Typography variant="body1" sx={{ mt: 2 }}>{productData.description}</Typography>
           <Box sx={{ mt: 3 }}>
-            <Button variant="contained" color="primary">Add to Cart</Button>
+            <Button variant="contained" color="primary">Agregar al Carrito</Button>
           </Box>
         </CardContent>
       </Card>
