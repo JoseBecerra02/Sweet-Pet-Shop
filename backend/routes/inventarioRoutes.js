@@ -52,6 +52,7 @@ router.get('/producto/:id', async (req, res) => {
 });
 router.delete('/producto/:id', async (req, res) => {
   const { id } = req.params;
+  console.log('Eliminando producto:', id);
   try {
     const productoEliminado = await Inventario.findByIdAndDelete(id);
     if (!productoEliminado) {

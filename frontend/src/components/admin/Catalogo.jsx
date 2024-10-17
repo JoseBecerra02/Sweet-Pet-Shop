@@ -217,7 +217,7 @@ export default function Catalogo() {
 
   // Eliminar un producto
   const handleProductDelete = (productId) => {
-    axios.delete(`http://localhost:3000/api/inventario/${productId}`)
+    axios.delete(`http://localhost:3000/api/inventario/producto/${productId}`)
       .then(() => {
         setProducts(products.filter(prod => prod._id !== productId));
       })
