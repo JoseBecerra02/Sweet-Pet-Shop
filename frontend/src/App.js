@@ -7,6 +7,7 @@ import "./App.css";
 import Perfil from './components/client/Perfil';
 import AdminDashboard from './components/admin/AdminDashboard';
 import Catalogo from './components/admin/Catalogo';
+import Users from './components/admin/Users';
 import ClienteDashboard from './components/client/ClienteDashboard';
 import { Typography, Box, Snackbar, Alert } from '@mui/material';
 import { styled } from '@mui/system';
@@ -146,6 +147,7 @@ const ContentBox = styled(Box)({
           {/* Rutas para Admin */}
           <Route path="/dashboard-admin" element={isLoggedIn && userRole === 'admin' ? <AdminDashboard /> : <Navigate to="/" />} />
           <Route path="/catalogAdmin" element={isLoggedIn && userRole === 'admin' ? <Catalogo /> : <Navigate to="/" />} />
+          <Route path="/Users" element={isLoggedIn && userRole === 'admin' ? <Users /> : <Navigate to="/" />} />
 
           {/* Rutas para Cliente */}
           <Route path="/clienteapp" element={isLoggedIn && userRole === 'cliente' ? <ClienteDashboard /> : <Navigate to="/" />} />
