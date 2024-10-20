@@ -127,6 +127,23 @@ router.delete('/eliminar', async (req, res) => {
     res.status(500).json({ message: 'Error al eliminar el usuario' });
   }
 });
+// Ruta para eliminar un usuario por ID
+router.delete('/usuarios/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const user = await Usuario.findByIdAndDelete(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    res.json({ message: 'Usuario eliminado con éxito' });
+  } catch (error) {
+    console.error('Error al eliminar el usuario:', error);
+    res.status(500).json({ message: 'Error al eliminar el usuario' });
+  }
+});
 // Ruta para cambiar el estado de un usuario por correo electrónico
 router.put('/cambiar-estado', async (req, res) => {
   try {
@@ -175,6 +192,34 @@ router.put('/cambiar-rol', async (req, res) => {
   } catch (error) {
     console.error('Error al cambiar el rol del usuario:', error);
     res.status(500).json({ message: 'Error al cambiar el rol del usuario' });
+  }
+});
+// Ruta para editar un usuario por ID
+router.put('/usuarios/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { correo, nombre, rol, telefono, direccion, ciudad } = req.body;
+
+    // Validar campos requeridos
+    if (!correo && !nombre && !rol && !telefono && !direccion && !ciudad) {
+      return res.status(400).json({ message: 'Debe proporcionar al menos un campo para actualizar.' });
+    }
+
+    // Actualizar usuario
+    const user = await Usuario.findByIdAndUpdate(
+      userId,
+      { correo, nombre, rol, telefono, direccion, ciudad },
+      { new: true, runValidators: true } // Aplicar validadores durante la actualización
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    res.json({ message: 'Usuario actualizado con éxito', user });
+  } catch (error) {
+    console.error('Error al actualizar el usuario:', error);
+    res.status(500).json({ message: 'Error al actualizar el usuario' });
   }
 });
 module.exports = router;

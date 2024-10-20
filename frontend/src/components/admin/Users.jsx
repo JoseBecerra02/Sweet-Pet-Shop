@@ -74,7 +74,7 @@ export default function Usuarios() {
   };
 
   const handleAddUser = () => {
-    axios.post('http://localhost:3000/api/usuarios/usuarios', newUser)
+    axios.post('http://localhost:3000/api/usuarios/crear-usuario', newUser)
       .then(response => {
         setUsers([...users, response.data]); 
         handleDialogClose();
