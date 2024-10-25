@@ -22,12 +22,6 @@ const InventarioSchema = new mongoose.Schema({
     ruta: {
         type: String,
         required: true,
-        validate: {
-            validator: function (v) {
-                return /^(https:\/\/drive\.google\.com\/.+)/.test(v); // Valida que sea un enlace a Google Drive
-            },
-            message: props => `${props.value} no es una URL válida de Google Drive!`
-        }
     },
     descripcion: {
         type: String,
