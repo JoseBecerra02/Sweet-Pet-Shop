@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Grid, Card, CardContent, CardMedia, Typography, CardActions, Button, Box, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions as DialogAction } from '@mui/material';
+import { Grid, Card, CardContent, CardMedia, Typography, Box, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions as DialogAction, Button, IconButton } from '@mui/material';
+import { ShoppingCart } from '@mui/icons-material';
 import axios from 'axios';
 
 const defaultImageUrl = 'https://img.freepik.com/foto-gratis/perro-lindo-arte-digital_23-2151150544.jpg';
@@ -66,11 +67,16 @@ export default function CatalogoCliente() {
 
   return (
     <Box sx={{ padding: 3, marginTop: -3 }}>
-      <Typography variant="h4" gutterBottom>Catálogo de Productos</Typography>
+      <Typography variant="h4" gutterBottom sx={{ color: '#CA6DF2', textAlign: 'center', marginBottom: '40px', fontWeight: 'bold' }}>
+        Catálogo de Productos
+      </Typography>
       <Grid container spacing={3}>
         {products.map((product) => (
           <Grid item xs={12} sm={6} md={4} key={product._id}>
-            <Card>
+            <Card
+              onClick={() => handleOpenDialog(product)}
+              sx={{ cursor: 'pointer', transition: 'transform 0.3s', '&:hover': { transform: 'scale(1.05)' } }}
+            >
               <CardMedia
                 component="img"
                 height="300"
@@ -78,14 +84,22 @@ export default function CatalogoCliente() {
                 alt={product.nombre_producto}
               />
               <CardContent>
-                <Typography variant="h5">{product.nombre_producto}</Typography>
-                <Typography variant="subtitle1">${product.precio}</Typography>
-                <Typography variant="body2" color="textSecondary">{product.descripcion}</Typography>
+                <Typography variant="h5" sx={{ color: '#2D2D2D', fontWeight: 'bold' }}>{product.nombre_producto}</Typography>
+                <Typography variant="body2" color="textSecondary" sx={{ marginBottom: 1 }}>{product.descripcion}</Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Typography variant="h6" sx={{ color: '#B86AD9', fontWeight: 'bold' }}>${product.precio.toFixed(2)}</Typography>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    color="secondary"
+                    onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }}
+                    sx={{ backgroundColor: '#B86AD9', '&:hover': { backgroundColor: '#A55BC0' }, display: 'flex', alignItems: 'center' }}
+                  >
+                    <ShoppingCart sx={{ marginRight: 1 }} />
+                    Agregar al Carrito
+                  </Button>
+                </Box>
               </CardContent>
-              <CardActions>
-                <Button size="small" variant="contained" color="primary" onClick={() => handleOpenDialog(product)}>Ver Detalles</Button>
-                <Button size="small" variant="contained" color="secondary" onClick={() => handleAddToCart(product)}>Agregar al Carrito</Button>
-              </CardActions>
             </Card>
           </Grid>
         ))}
