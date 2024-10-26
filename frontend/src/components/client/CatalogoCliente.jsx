@@ -30,7 +30,7 @@ export default function CatalogoCliente() {
 
   // Obtener productos del backend
   useEffect(() => {
-    axios.get('http://localhost:3000/api/inventario/productos')  // Ajusta la URL según tu servidor
+    axios.get('http://localhost:3000/api/inventario/productos')
       .then(response => {
         setProducts(response.data);
       })
@@ -49,6 +49,21 @@ export default function CatalogoCliente() {
     setSelectedProduct(null);
   };
 
+  const handleAddToCart = (product) => {
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const existingItem = cart.find((item) => item.id === product._id);
+    if (existingItem) {
+      cart = cart.map((item) =>
+        item.id === product._id
+          ? { ...item, quantity: item.quantity + 1 }
+          : item
+      );
+    } else {
+      cart.push({ ...product, id: product._id, quantity: 1 });
+    }
+    localStorage.setItem('cart', JSON.stringify(cart));
+  };
+
   return (
     <Box sx={{ padding: 3, marginTop: -3 }}>
       <Typography variant="h4" gutterBottom>Catálogo de Productos</Typography>
@@ -59,7 +74,7 @@ export default function CatalogoCliente() {
               <CardMedia
                 component="img"
                 height="300"
-                image={product.ruta || defaultImageUrl} // Mostrar imagen del producto
+                image={product.ruta || defaultImageUrl}
                 alt={product.nombre_producto}
               />
               <CardContent>
@@ -69,7 +84,7 @@ export default function CatalogoCliente() {
               </CardContent>
               <CardActions>
                 <Button size="small" variant="contained" color="primary" onClick={() => handleOpenDialog(product)}>Ver Detalles</Button>
-                <Button size="small" variant="contained" color="secondary">Agregar al Carrito</Button>
+                <Button size="small" variant="contained" color="secondary" onClick={() => handleAddToCart(product)}>Agregar al Carrito</Button>
               </CardActions>
             </Card>
           </Grid>

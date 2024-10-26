@@ -11,6 +11,8 @@ import Users from './components/admin/Users';
 import ClienteDashboard from './components/client/ClienteDashboard';
 import { Typography, Box, Snackbar, Alert } from '@mui/material';
 import { styled } from '@mui/system';
+import CatalogoCliente from './components/client/CatalogoCliente';
+import Carrito from './components/client/Carrito';
 
 
 const App = () => {
@@ -20,7 +22,7 @@ const App = () => {
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
-
+  
   useEffect(() => {
     const token = Cookies.get('token');
     const role = Cookies.get('rol'); 
@@ -151,6 +153,8 @@ const ContentBox = styled(Box)({
 
           {/* Rutas para Cliente */}
           <Route path="/clienteapp" element={isLoggedIn && userRole === 'cliente' ? <ClienteDashboard /> : <Navigate to="/" />} />
+          <Route path="/catalogo-cliente" element={<CatalogoCliente />} />
+          <Route path="/carrito" element={<Carrito />} />
 
           {/* Redirección a Home si se accede a una ruta no válida */}
           <Route path="*" element={<Navigate to="/" />} />
