@@ -12,12 +12,12 @@ const sendWelcomeEmail = async (to, name) => {
 };
 
 // Función para enviar alerta de suspensión de cuenta
-const sendSuspensionAlertEmail = async (to, reason) => {
+const sendSuspensionAlertEmail = async (to, name) => {
   const mailOptions = {
     from: '"Sweet Pet Shop" <SweetPetSchi@gmail.com>',
     to,
     subject: "Alerta de Suspensión de Cuenta",
-    html: `<p>Tu cuenta ha sido suspendida por la siguiente razón: ${reason}.</p><p>Si crees que esto es un error, contáctanos.</p>`
+    html: `<p>${name}, tu cuenta ha sido suspendida. </p><p>Si crees que esto es un error, contáctanos.</p>`
   };
   await transporter.sendMail(mailOptions);
 };
