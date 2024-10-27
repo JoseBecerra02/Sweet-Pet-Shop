@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const Carrito = require('./models/Carrito');
-const Factura = require('./models/Factura');
+const Carrito = require('../models/Carrito');
+const Factura = require('../models/Factura');
 const { sendInvoiceEmail } = require('../controllers/MailController');
 
 // Ruta para crear una factura a partir del carrito

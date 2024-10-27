@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const Carrito = require('./models/Carrito'); // Ajusta la ruta al modelo Carrito
-const Inventario = require('./models/Inventario'); // Ajusta la ruta al modelo Inventario
+const Carrito = require('../models/Carrito'); // Ajusta la ruta al modelo Carrito
+const Inventario = require('../models/Inventario'); // Ajusta la ruta al modelo Inventario
 
 // Ruta para agregar un producto al carrito
 router.post('/carrito/agregar', async (req, res) => {
