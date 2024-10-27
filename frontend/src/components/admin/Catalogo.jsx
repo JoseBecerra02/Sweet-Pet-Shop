@@ -31,6 +31,26 @@ import {
 } from "@mui/material";
 import { Menu as MenuIcon, Home, People, Inventory, ShoppingCart, Settings, Edit, Delete, Save } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+// Importar los módulos necesarios de Firebase
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+
+// Configuración de Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyAOu2d20BqFbe2Ilm7lTlvn953tL6GM8GE",
+  authDomain: "sweetpetshop-5477f.firebaseapp.com",
+  projectId: "sweetpetshop-5477f",
+  storageBucket: "sweetpetshop-5477f.appspot.com",
+  messagingSenderId: "559380812966",
+  appId: "1:559380812966:web:621c71ccedb15297451067",
+  measurementId: "G-4ECC4H19CV"
+};
+
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+const storage = getStorage(app);
+
 
 export default function Catalogo() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -100,36 +120,40 @@ export default function Catalogo() {
     setNewProduct({ ...newProduct, [name]: value });
   };
 
-  const handleAddProduct = () => {
-    if (!newProduct.categoria) {
-      console.error('No se ha seleccionado una categoría');
-      return;
-    }
+  const handleAddProduct = async () => {
+      if (!newProduct.categoria || !newProduct.imagen) {
+        console.error('No se ha seleccionado una categoría o imagen');
+        return;
+      }
 
-    axios.post('http://localhost:3000/api/inventario', newProduct)
-      .then(response => {
-        setProducts([...products, response.data]); 
-        handleDialogClose();
-        setNewProduct({
-          nombre_producto: "",
-          precio: "",
-          cantidad: "",
-          descripcion: "",
-          categoria: "",
-          ruta: "",
-        });
-      })
-      .catch(error => {
-        if (error.response) {
-          console.error('Error al agregar producto:', error.response.data);
-        } else if (error.request) {
-          console.error('Error al agregar producto: No se recibió respuesta del servidor', error.request);
-        } else {
+      // Subir la imagen a Firebase Storage
+      const fileRef = ref(storage, `images/${newProduct.imagen.name}`);
+      await uploadBytes(fileRef, newProduct.imagen);
+
+      // Obtener la URL de la imagen subida
+      const imageUrl = await getDownloadURL(fileRef);
+
+      // Ahora puedes guardar el producto en MongoDB con la URL de la imagen
+      const productoConImagen = { ...newProduct, ruta: imageUrl };
+
+      axios.post('http://localhost:3000/api/inventario', productoConImagen)
+        .then(response => {
+          setProducts([...products, response.data]);
+          handleDialogClose();
+          setNewProduct({
+            nombre_producto: "",
+            precio: "",
+            cantidad: "",
+            descripcion: "",
+            categoria: "",
+            ruta: "",
+          });
+        })
+        .catch(error => {
           console.error('Error al agregar producto:', error.message);
-        }
-      });
-  };
-
+        });
+    };
+    
   const handleAddCategory = () => {
     const categoryToSend = { nombre: newCategory }; 
     
@@ -143,6 +167,22 @@ export default function Catalogo() {
         console.error('Error al agregar categoría:', error);
       });
   };
+  const handleDeleteProduct = (productId) => {
+    console.log("Deleting product with ID:", productId);
+    fetch(`http://localhost:3000/api/inventario/producto/${productId}`, {
+      method: "DELETE",
+    })
+      .then(response => {
+        if (response.ok) {
+          //Actualizar la lista de productos
+        } else {
+          console.error("Error deleting product:", response.statusText);
+        }
+      })
+      .catch(error => console.error("Error deleting product:", error));
+  };
+
+
 
   // Iniciar la edición de una categoría
   const handleEditClick = (category) => {
@@ -184,7 +224,8 @@ export default function Catalogo() {
 
   // Guardar los cambios de edición de un producto
   const handleProductSaveClick = (productId) => {
-    axios.put(`http://localhost:3000/api/inventario/${productId}`, editProductData)
+    console.log('Editando producto:', editProductData);
+    axios.put(`http://localhost:3000/api/inventario/producto/${productId}`, editProductData)
       .then(() => {
         const updatedProducts = products.map((prod) =>
           prod._id === productId ? { ...prod, ...editProductData } : prod
@@ -199,7 +240,7 @@ export default function Catalogo() {
 
   // Eliminar un producto
   const handleProductDelete = (productId) => {
-    axios.delete(`http://localhost:3000/api/inventario/${productId}`)
+    axios.delete(`http://localhost:3000/api/inventario/producto/${productId}`)
       .then(() => {
         setProducts(products.filter(prod => prod._id !== productId));
       })
@@ -428,15 +469,12 @@ export default function Catalogo() {
                 </MenuItem>
               ))}
             </Select>
-            <TextField
-              margin="dense"
-              name="ruta"
-              label="URL de la Imagen"
-              fullWidth
-              variant="outlined"
-              value={newProduct.ruta}
-              onChange={handleInputChange}
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setNewProduct({ ...newProduct, imagen: e.target.files[0] })}
             />
+
           </DialogContent>
           <DialogActions>
             <Button onClick={handleDialogClose} color="primary">
