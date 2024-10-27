@@ -1,8 +1,11 @@
 const mongoose = require('mongoose');
-const generarIdSecuencial = require('../middlewares/generarIdSecuencial');
 
 const CarritoSchema = new mongoose.Schema({
-    id_carrito: { type: Number, unique: true, required: true, default: 0, min: 0 },
+    id_usuario: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'Usuario',
+        required: true 
+    },
     producto: { 
         type: mongoose.Schema.Types.ObjectId, 
         ref: 'Inventario', 
@@ -15,6 +18,6 @@ const CarritoSchema = new mongoose.Schema({
     },
 }, { timestamps: true });
 
-CarritoSchema.pre('save', generarIdSecuencial('Carrito', 'id_carrito'));
+CarritoSchema.index({ id_usuario: 1, producto: 1 }, { unique: true });
 
 module.exports = mongoose.model('Carrito', CarritoSchema);

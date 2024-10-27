@@ -4,12 +4,12 @@ const Carrito = require('./models/Carrito'); // Ajusta la ruta al modelo Carrito
 const Inventario = require('./models/Inventario'); // Ajusta la ruta al modelo Inventario
 
 // Ruta para agregar un producto al carrito
-router.post('/carrito/add', async (req, res) => {
-    const { id_producto, cantidad } = req.body;
+router.post('/carrito/agregar', async (req, res) => {
+    const { id_usuario, id_producto, cantidad } = req.body;
 
     try {
-        // Verifica si el producto ya existe en el carrito
-        let item = await Carrito.findOne({ producto: id_producto });
+        // Verifica si el producto ya existe en el carrito para este usuario
+        let item = await Carrito.findOne({ id_usuario, producto: id_producto });
 
         if (item) {
             // Si el producto ya está, aumenta la cantidad
@@ -20,13 +20,13 @@ router.post('/carrito/add', async (req, res) => {
             if (!producto) return res.status(404).json({ error: 'Producto no encontrado en inventario' });
 
             // Si no está en el carrito, crea una nueva entrada
-            item = new Carrito({ producto: id_producto, cantidad });
+            item = new Carrito({ id_usuario, producto: id_producto, cantidad });
         }
 
         await item.save();
 
         // Recalcular el total del carrito
-        const carrito = await Carrito.find().populate('producto');
+        const carrito = await Carrito.find({ id_usuario }).populate('producto');
         let total = carrito.reduce((acc, item) => acc + item.producto.precio * item.cantidad, 0);
 
         res.status(200).json({ message: 'Producto agregado al carrito', item, total });
@@ -38,9 +38,10 @@ router.post('/carrito/add', async (req, res) => {
 // Ruta para eliminar un producto del carrito
 router.delete('/carrito/eliminar/:id_producto', async (req, res) => {
     const { id_producto } = req.params;
+    const { id_usuario } = req.body;
 
     try {
-        const item = await Carrito.findOneAndDelete({ producto: id_producto });
+        const item = await Carrito.findOneAndDelete({ id_usuario, producto: id_producto });
         if (!item) return res.status(404).json({ error: 'Producto no encontrado en el carrito' });
 
         res.status(200).json({ message: 'Producto eliminado del carrito' });
@@ -51,10 +52,10 @@ router.delete('/carrito/eliminar/:id_producto', async (req, res) => {
 
 // Ruta para modificar la cantidad de un producto en el carrito
 router.put('/carrito/actualizar', async (req, res) => {
-    const { id_producto, action } = req.body;
+    const { id_usuario, id_producto, action } = req.body;
 
     try {
-        const item = await Carrito.findOne({ producto: id_producto });
+        const item = await Carrito.findOne({ id_usuario, producto: id_producto });
         if (!item) return res.status(404).json({ error: 'Producto no encontrado en el carrito' });
 
         // Ajusta la cantidad según la acción
@@ -69,7 +70,7 @@ router.put('/carrito/actualizar', async (req, res) => {
         await item.save();
 
         // Recalcular el total del carrito para enviar en la respuesta
-        const carrito = await Carrito.find().populate('producto');
+        const carrito = await Carrito.find({ id_usuario }).populate('producto');
         let total = carrito.reduce((acc, item) => acc + item.producto.precio * item.cantidad, 0);
 
         res.status(200).json({ message: 'Cantidad actualizada', item, total });
@@ -78,11 +79,12 @@ router.put('/carrito/actualizar', async (req, res) => {
     }
 });
 
-
 // Ruta para obtener el total del carrito
 router.get('/carrito', async (req, res) => {
+    const { id_usuario } = req.body;
+
     try {
-        const carrito = await Carrito.find().populate('producto');
+        const carrito = await Carrito.find({ id_usuario }).populate('producto');
         let total = 0;
         const items = carrito.map(item => {
             const subtotal = item.producto.precio * item.cantidad;
