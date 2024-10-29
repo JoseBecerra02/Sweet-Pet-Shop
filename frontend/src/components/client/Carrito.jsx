@@ -1,14 +1,45 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, List, ListItem, ListItemAvatar, Avatar, ListItemText, IconButton, Button, Grid, Paper } from '@mui/material';
+import { Box, Typography, List, ListItem, ListItemAvatar, Avatar, ListItemText, IconButton, Button, Grid, Paper, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import { Delete, Add, Remove } from '@mui/icons-material';
+import Cookies from 'js-cookie';
+import axios from 'axios';
 
 export default function Carrito() {
   const [cartItems, setCartItems] = useState([]);
+  const [openInvoice, setOpenInvoice] = useState(false); // Estado para controlar la apertura del modal de factura
+  const [user, setUser] = useState({});
 
   // Leer el carrito desde localStorage al montar el componente
   useEffect(() => {
     const cart = JSON.parse(localStorage.getItem('cart')) || [];
     setCartItems(cart);
+  }, []);
+
+  // Obtener los datos del perfil del cliente
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = Cookies.get('token');
+        if (!token) {
+          console.error('Token no encontrado');
+          return;
+        }
+
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          withCredentials: true,
+        };
+
+        const response = await axios.get('http://localhost:3000/api/usuarios/perfil', config);
+        setUser(response.data.user);
+      } catch (error) {
+        console.error('Error al obtener el perfil:', error);
+      }
+    };
+
+    fetchProfile();
   }, []);
 
   // Actualizar el carrito en localStorage
@@ -42,6 +73,16 @@ export default function Carrito() {
   // Calcular el total del carrito
   const totalCarrito = cartItems.reduce((total, item) => total + item.precio * item.quantity, 0);
 
+  // Función para abrir la factura
+  const handleOpenInvoice = () => {
+    setOpenInvoice(true);
+  };
+
+  // Función para cerrar la factura
+  const handleCloseInvoice = () => {
+    setOpenInvoice(false);
+  };
+
   return (
     <Box sx={{ padding: 3, marginTop: -1 }}>
       <Typography variant="h4" gutterBottom sx={{ color: '#CA6DF2', textAlign: 'center', marginBottom: '40px', fontWeight: 'bold' }}>
@@ -57,7 +98,6 @@ export default function Carrito() {
               {cartItems.map((item) => (
                 <ListItem key={item.id} sx={{ backgroundColor: '#F2F2F2', borderRadius: '15px', mb: 3, padding: 2, boxShadow: '0 0 20px rgba(0, 0, 0, 0.1)' }}>
                   <Grid container alignItems="center" spacing={2}>
-                    {/* Imagen del producto */}
                     <Grid item xs={12} sm={2} md={2} sx={{ textAlign: { xs: 'center', sm: 'left' } }}>
                       <ListItemAvatar>
                         <Avatar
@@ -134,12 +174,49 @@ export default function Carrito() {
             <Button
               variant="contained"
               sx={{ backgroundColor: '#B86AD9', color: 'white', padding: '15px', borderRadius: '30px', fontSize: '18px', fontWeight: 'bold', width: '100%', '&:hover': { backgroundColor: '#A55BC0' } }}
+              onClick={handleOpenInvoice}
             >
               PROCEDER AL PAGO
             </Button>
           </Paper>
         </Grid>
       </Grid>
+
+      {/* Modal para mostrar la factura */}
+      <Dialog open={openInvoice} onClose={handleCloseInvoice} maxWidth="md" fullWidth>
+        <DialogTitle>Factura</DialogTitle>
+        <DialogContent>
+          <Typography variant="h6" sx={{ marginBottom: 2 }}>
+            Cliente: {user.nombre || 'Nombre del Cliente'}
+          </Typography>
+          <Typography variant="body1">Dirección: {user.direccion || 'Sin dirección'}</Typography>
+          <Typography variant="body1">Ciudad: {user.ciudad || 'Sin ciudad'}</Typography>
+          <Typography variant="body1">Teléfono: {user.telefono || 'Sin teléfono'}</Typography>
+          <Typography variant="body1" sx={{ marginTop: 2 }}>
+            Fecha: {new Date().toLocaleDateString()}
+          </Typography>
+          <Box sx={{ marginTop: 3 }}>
+            <List>
+              {cartItems.map((item, index) => (
+                <ListItem key={item.id}>
+                  <ListItemText
+                    primary={`${index + 1}. ${item.nombre_producto}`}
+                    secondary={`Cantidad: ${item.quantity} - Precio Unitario: $${item.precio} - Total: $${item.precio * item.quantity}`}
+                  />
+                </ListItem>
+              ))}
+            </List>
+          </Box>
+          <Typography variant="h5" sx={{ fontWeight: 'bold', marginTop: 2 }}>
+            Total Factura: ${totalCarrito.toFixed(2)}
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseInvoice} variant="contained" sx={{ backgroundColor: '#CA6DF2', color: 'white' }}>
+            Aceptar
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
