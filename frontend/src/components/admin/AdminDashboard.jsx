@@ -15,9 +15,10 @@ import {
   CardContent,
 } from "@mui/material";
 import Grid from '@mui/material/Grid2';
-import { Menu as MenuIcon, Notifications, Home, People, Inventory, ShoppingCart, Settings } from "@mui/icons-material";
+import { Menu as MenuIcon, Notifications, Home, People, Inventory, ShoppingCart, Settings, Logout } from "@mui/icons-material";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { useNavigate } from "react-router-dom"; // Importa useNavigate
+import { useNavigate } from "react-router-dom";
+import Cookies from 'js-cookie';
 
 const salesData = [
   { name: "Ene", sales: 4000 },
@@ -30,15 +31,21 @@ const salesData = [
 
 export default function AdminDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const navigate = useNavigate(); // Hook para redirección
+  const navigate = useNavigate();
 
   const toggleDrawer = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
-  // Manejar navegación
   const handleNavigation = (path) => {
     navigate(path);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    Cookies.remove('token'); 
+    Cookies.remove('rol'); 
+    window.location.href = '/'; 
   };
 
   return (
@@ -50,12 +57,14 @@ export default function AdminDashboard() {
           <IconButton edge="start" color="inherit" onClick={toggleDrawer} sx={{ mr: 2 }}>
             <MenuIcon />
           </IconButton>
-          {/* <Button color="inherit" onClick={handleLogout}>Cerrar sesión</Button> */}
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             Panel de Administración
           </Typography>
           <IconButton color="inherit">
             <Notifications />
+          </IconButton>
+          <IconButton color="inherit" onClick={handleLogout}>
+            <Logout />
           </IconButton>
         </Toolbar>
       </AppBar>
@@ -106,6 +115,12 @@ export default function AdminDashboard() {
                 <Settings />
               </ListItemIcon>
               {sidebarOpen && <ListItemText primary="Configuración" />}
+            </ListItem>
+            <ListItem button onClick={handleLogout}>
+              <ListItemIcon>
+                <Logout />
+              </ListItemIcon>
+              {sidebarOpen && <ListItemText primary="Cerrar Sesión" />}
             </ListItem>
           </List>
         </Box>

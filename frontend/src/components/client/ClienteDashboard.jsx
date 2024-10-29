@@ -11,13 +11,15 @@ import {
   ListItemText,
   Box,
   CssBaseline,
+  Button
 } from '@mui/material';
-import { Menu as MenuIcon, Home, ShoppingCart, Inventory, Person } from '@mui/icons-material';
+import { Menu as MenuIcon, Home, ShoppingCart, Inventory, Person, Logout } from '@mui/icons-material';
+import Cookies from 'js-cookie';
 import CatalogoCliente from './CatalogoCliente';
 import Carrito from './Carrito';
 import ProductoDetalle from './ProductoDetalle';
 import HistorialPedidos from './HistorialPedidos';
-import Perfil from './Perfil'; // Importar el componente Perfil
+import Perfil from './Perfil'; 
 
 export default function ClienteDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -25,6 +27,13 @@ export default function ClienteDashboard() {
 
   const toggleDrawer = () => {
     setSidebarOpen(!sidebarOpen);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    Cookies.remove('token'); 
+    Cookies.remove('rol'); 
+    window.location.href = '/'; 
   };
 
   const renderSelectedSection = () => {
@@ -36,7 +45,7 @@ export default function ClienteDashboard() {
       case 'historialPedidos':
         return <HistorialPedidos />;
       case 'perfil':
-        return <Perfil />; // Mostrar el componente Perfil
+        return <Perfil />; 
       default:
         return <CatalogoCliente />;
     }
@@ -56,6 +65,9 @@ export default function ClienteDashboard() {
           </Typography>
           <IconButton color="inherit" onClick={() => setSelectedSection('perfil')}>
             <Person />
+          </IconButton>
+          <IconButton color="inherit" onClick={handleLogout}>
+            <Logout />
           </IconButton>
         </Toolbar>
       </AppBar>
@@ -101,11 +113,16 @@ export default function ClienteDashboard() {
               </ListItemIcon>
               {sidebarOpen && <ListItemText primary="Perfil" />}
             </ListItem>
+            <ListItem button onClick={handleLogout}>
+              <ListItemIcon>
+                <Logout />
+              </ListItemIcon>
+              {sidebarOpen && <ListItemText primary="Cerrar Sesión" />}
+            </ListItem>
           </List>
         </Box>
       </Drawer>
 
-      {/* Main Content */}
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
         <Toolbar />
         {renderSelectedSection()}

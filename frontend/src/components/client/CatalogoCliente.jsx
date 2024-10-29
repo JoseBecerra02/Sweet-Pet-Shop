@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Grid, Card, CardContent, CardMedia, Typography, Box, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from '@mui/material';
+import { Grid, Card, CardContent, CardMedia, Typography, Box, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button, Snackbar, Alert } from '@mui/material';
 import { ShoppingCart } from '@mui/icons-material';
 import axios from 'axios';
 
@@ -31,8 +31,8 @@ export default function CatalogoCliente() {
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
 
-  // Obtener productos y categorías desde el backend
   useEffect(() => {
     axios.get('http://localhost:3000/api/categoria')
       .then(response => {
@@ -41,9 +41,6 @@ export default function CatalogoCliente() {
           nombre: category.nombre
         }));
         setCategories(categoriesData);
-        
-        // Log para ver las categorías cargadas
-        console.log('Categorías cargadas:', categoriesData);
       })
       .catch(error => {
         console.error('Error al obtener categorías:', error);
@@ -63,9 +60,6 @@ export default function CatalogoCliente() {
           });
           setProducts(productsWithCategoryNames);
           setFilteredProducts(productsWithCategoryNames);
-          
-          // Log para ver los productos cargados
-          console.log('Productos cargados:', productsWithCategoryNames);
         })
         .catch(error => {
           console.error('Error al obtener los productos:', error);
@@ -96,6 +90,11 @@ export default function CatalogoCliente() {
       cart.push({ ...product, id: product._id, quantity: 1 });
     }
     localStorage.setItem('cart', JSON.stringify(cart));
+    setSnackbarOpen(true);
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbarOpen(false);
   };
 
   const handleCategoryChange = (categoryId) => {
@@ -104,28 +103,19 @@ export default function CatalogoCliente() {
       : [...selectedCategories, categoryId];
 
     setSelectedCategories(updatedSelectedCategories);
-    
-    // Log de las categorías seleccionadas
-    console.log('Categorías seleccionadas:', updatedSelectedCategories);
 
-    // Filtrar productos según las categorías seleccionadas
     if (updatedSelectedCategories.length === 0) {
-      setFilteredProducts(products); // Si no hay categorías seleccionadas, mostrar todos los productos
+      setFilteredProducts(products);
     } else {
-      // Log antes de filtrar
-      console.log('Productos antes de filtrar:', products);
       const newFilteredProducts = products.filter(product => 
-        updatedSelectedCategories.includes(product.categoria) // Comparar directamente con el string
+        updatedSelectedCategories.includes(product.categoria)
       );
       setFilteredProducts(newFilteredProducts);
-      
-      // Log de los productos filtrados
-      console.log('Productos filtrados:', newFilteredProducts);
     }
   };
 
   return (
-    <Box sx={{ padding: 3, marginTop: -3, backgroundColor: '#F2F2F2' }}>
+    <Box sx={{ padding: 3, marginTop: -3, backgroundColor: 'white' }}>
       <Typography variant="h4" gutterBottom sx={{ color: '#CA6DF2', textAlign: 'center', marginBottom: '40px', fontWeight: 'bold' }}>
         Catálogo de Productos
       </Typography>
@@ -191,6 +181,12 @@ export default function CatalogoCliente() {
           product={selectedProduct}
         />
       )}
+
+      <Snackbar open={snackbarOpen} autoHideDuration={3000} onClose={handleCloseSnackbar}>
+        <Alert onClose={handleCloseSnackbar} severity="success" sx={{ width: '100%' }}>
+          Producto agregado al carrito!
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
