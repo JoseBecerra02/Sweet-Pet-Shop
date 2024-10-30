@@ -65,7 +65,7 @@ router.delete('/producto/:id', async (req, res) => {
   }
 });
 router.post('/crear-producto', async (req, res) => {
-  const {nombre_producto, categoria, cantidad, precio, ruta, descripcion } = req.body;
+  const {nombre_producto, categoria, cantidad, precio, ruta, descripcion, umbral } = req.body;
 
   if ( !nombre_producto || !categoria || !cantidad || !precio || !ruta) {
     return res.status(400).json({ message: 'Todos los campos requeridos deben ser proporcionados' });
@@ -78,7 +78,8 @@ router.post('/crear-producto', async (req, res) => {
       cantidad,
       precio,
       ruta,
-      descripcion
+      descripcion,
+      umbral
     });
 
     await nuevoProducto.save();
@@ -104,7 +105,8 @@ router.put('/producto/:id', async (req, res) => {
       cantidad,
       precio,
       ruta,
-      descripcion
+      descripcion,
+      umbral
     }, { new: true });
 
     if (!productoActualizado) {

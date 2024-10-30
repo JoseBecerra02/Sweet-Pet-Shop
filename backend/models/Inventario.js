@@ -26,6 +26,12 @@ const InventarioSchema = new mongoose.Schema({
     descripcion: {
         type: String,
         maxlength: [500, 'La descripción no puede exceder los 500 caracteres'],
+    },
+    umbral: {
+        type: Number,
+        required: true,
+        default: 25,
+        min: [0, 'La cantidad no puede ser negativa'],
     }
 }, { timestamps: true }); // Timestamps para createdAt y updatedAt
 
