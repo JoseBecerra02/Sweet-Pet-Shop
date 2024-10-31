@@ -57,6 +57,7 @@ export default function Catalogo() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [umbralDialogOpen, setUmbralDialogOpen] = useState(false);
   const [umbralMinimo, setUmbralMinimo] = useState(0);
+  const [umbral, setUmbral] = useState(null);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [products, setProducts] = useState([]);
   const [newProduct, setNewProduct] = useState({
@@ -69,8 +70,6 @@ export default function Catalogo() {
   });
   const [categories, setCategories] = useState([]);
   const [newCategory, setNewCategory] = useState("");
-  const [umbral, setUmbral] = useState([]);
-  const [newUmbral, setNewUmbral] = useState(null);
   const [editCategoryId, setEditCategoryId] = useState(null);
   const [editCategoryName, setEditCategoryName] = useState("");
   const [editProductId, setEditProductId] = useState(null);
@@ -133,15 +132,15 @@ export default function Catalogo() {
   };
 
   const handleSaveUmbral = () => {
-    const umbralToSend = { nombre: newUmbral }; 
+    const valor = umbralMinimo; 
     
-    axios.post('http://localhost:3000/api/inventario/umbral', umbralToSend)
-      .then(response => {
-        setUmbral(response.data.umbral); 
-        setNewUmbral(null);
-        handleUmbralDialogClose();
+    axios.put(`http://localhost:3000/api/inventario/umbral/${valor}`)
+      .then((response) => {
+        console.log('Umbrales actualizados correctamente:', response.data);
+        setUmbral(valor); 
+        setUmbralMinimo(''); 
       })
-      .catch(error => {
+      .catch((error) => {
         console.error('Error al establecer umbral:', error);
       });
   };
