@@ -69,6 +69,8 @@ export default function Catalogo() {
   });
   const [categories, setCategories] = useState([]);
   const [newCategory, setNewCategory] = useState("");
+  const [umbral, setUmbral] = useState([]);
+  const [newUmbral, setNewUmbral] = useState(null);
   const [editCategoryId, setEditCategoryId] = useState(null);
   const [editCategoryName, setEditCategoryName] = useState("");
   const [editProductId, setEditProductId] = useState(null);
@@ -131,9 +133,17 @@ export default function Catalogo() {
   };
 
   const handleSaveUmbral = () => {
-    // Aquí puedes llamar a la API o aplicar la lógica para actualizar el umbral mínimo de los productos
-    console.log("Umbral mínimo establecido:", umbralMinimo);
-    setUmbralDialogOpen(false);
+    const umbralToSend = { nombre: newUmbral }; 
+    
+    axios.post('http://localhost:3000/api/inventario/umbral', umbralToSend)
+      .then(response => {
+        setUmbral(response.data.umbral); 
+        setNewUmbral(null);
+        handleUmbralDialogClose();
+      })
+      .catch(error => {
+        console.error('Error al establecer umbral:', error);
+      });
   };
 
   const handleAddProduct = async () => {
