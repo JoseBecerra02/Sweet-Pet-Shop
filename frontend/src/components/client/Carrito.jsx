@@ -39,20 +39,27 @@ export default function Carrito() {
           // Fetch Cart Items using user._id from profileResponse
           const cartResponse = await axios.get(`http://localhost:3000/api/carrito/carrito/${fetchedUser._id}`, config);
           if (cartResponse.status === 200) {
-            setCartItems(cartResponse.data.items);
+            setCartItems(cartResponse.data.items || []); // Asegurar que siempre se asigna un array
           } else {
             console.error('Error al obtener el carrito:', cartResponse);
+            setCartItems([]); // Si hay error, asegúrate de que cartItems sea un array vacío
           }
         } else {
           console.error('Error al obtener el perfil del usuario:', profileResponse);
         }
       } catch (error) {
         console.error('Error al obtener el perfil o los productos del carrito:', error);
+        setCartItems([]); // Si hay error, asegúrate de que cartItems sea un array vacío
       }
     };
 
     fetchProfileAndCartItems();
   }, []);
+
+  useEffect(() => {
+    console.log("Items del carrito después de ser actualizados:", cartItems);
+  }, [cartItems]);
+  
 
   // Obtener los detalles de los productos para las imágenes
   useEffect(() => {
@@ -86,25 +93,39 @@ export default function Carrito() {
         console.error('Token no encontrado');
         return;
       }
-
+  
       const config = {
         headers: {
           Authorization: `Bearer ${token}`,
         },
         withCredentials: true,
       };
-
+  
       const updateData = {
         id_usuario: user._id,
         id_producto: productId,
         action: action, // 'increment' o 'decrement'
       };
-
-      const response = await axios.put('http://localhost:3000/api/carrito/actualizar', updateData, config);
-
+  
+      const response = await axios.put('http://localhost:3000/api/carrito/carrito/actualizar', updateData, config);
+  
       if (response.status === 200) {
         console.log('Cantidad actualizada con éxito:', response.data);
-        setCartItems(response.data.items);
+        
+        if (response.data.item) {
+          setCartItems(prevItems =>
+            prevItems.map(item =>
+              item.id_producto === response.data.item.producto
+                ? {
+                    ...item,
+                    cantidad: response.data.item.cantidad, // Actualiza la cantidad con el valor nuevo
+                  }
+                : item
+            )
+          );
+        } else {
+          console.error('La respuesta de la API no contiene el item actualizado');
+        }
       } else {
         console.error('Error al actualizar la cantidad:', response);
       }
@@ -112,6 +133,17 @@ export default function Carrito() {
       console.error('Error al actualizar la cantidad del producto en el carrito:', error);
     }
   };
+  
+
+  useEffect(() => {
+    if (Array.isArray(cartItems)) {
+      console.log("Items del carrito después de ser actualizados:", cartItems);
+    } else {
+      console.error('cartItems no es un array:', cartItems);
+    }
+  }, [cartItems]);
+  
+  
 
   const handleIncreaseQuantity = (productId) => {
     handleUpdateQuantity(productId, 'increment');
@@ -129,22 +161,24 @@ export default function Carrito() {
         console.error('Token no encontrado');
         return;
       }
-
+  
       const config = {
         headers: {
           Authorization: `Bearer ${token}`,
         },
         withCredentials: true,
       };
-
-      const response = await axios.delete(`http://localhost:3000/api/carrito/eliminar/${productId}`, {
+  
+      const response = await axios.delete(`http://localhost:3000/api/carrito/carrito/eliminar/${productId}`, {
         headers: config.headers,
         data: { id_usuario: user._id },
       });
-
+  
       if (response.status === 200) {
         console.log('Producto eliminado del carrito con éxito:', response.data);
-        setCartItems(response.data.items);
+        
+        // Actualiza el estado eliminando el producto correspondiente
+        setCartItems(prevItems => prevItems.filter(item => item.id_producto !== productId));
       } else {
         console.error('Error al eliminar el producto del carrito:', response);
       }
@@ -152,6 +186,7 @@ export default function Carrito() {
       console.error('Error al eliminar el producto del carrito:', error);
     }
   };
+  
 
   // Calcular el total del carrito
   const totalCarrito = cartItems.reduce((total, item) => total + item.precio_unitario * item.cantidad, 0);
@@ -182,6 +217,7 @@ export default function Carrito() {
         withCredentials: true,
       };
 
+      // Crear los datos para la factura
       const facturaData = {
         id_usuario: user._id,
         productos: cartItems.map(item => ({
@@ -189,11 +225,12 @@ export default function Carrito() {
           nombre_producto: item.nombre_producto,
           precio_unitario: item.precio_unitario,
           cantidad: item.cantidad,
-          subtotal: item.subtotal,
+          subtotal: item.precio_unitario * item.cantidad, // Calcular el subtotal correctamente
         })),
         valor_total: totalCarrito,
       };
 
+      // Usar la URL correcta del endpoint
       const response = await axios.post('http://localhost:3000/api/factura/crear', facturaData, config);
 
       if (response.status === 201) {
