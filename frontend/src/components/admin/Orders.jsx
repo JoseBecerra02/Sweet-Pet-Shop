@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   AppBar,
   Toolbar,
@@ -16,20 +16,12 @@ import {
 } from "@mui/material";
 import Grid from '@mui/material/Grid2';
 import { Menu as MenuIcon, Notifications, Home, People, Inventory, ShoppingCart, Settings, Logout, Assignment } from "@mui/icons-material";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useNavigate } from "react-router-dom";
 import Cookies from 'js-cookie';
+import axios from 'axios';
 
-const salesData = [
-  { name: "Ene", sales: 4000 },
-  { name: "Feb", sales: 3000 },
-  { name: "Mar", sales: 5000 },
-  { name: "Abr", sales: 4500 },
-  { name: "May", sales: 6000 },
-  { name: "Jun", sales: 5500 },
-];
 
-export default function AdminDashboard() {
+export default function Orders() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -48,6 +40,37 @@ export default function AdminDashboard() {
     window.location.href = '/'; 
   };
 
+  const [ordenes, setOrdenes] = useState([]);
+  const [productos, setProductos] = useState([]);
+
+  
+  useEffect(() => {
+    const fetchOrdenes = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/api/orden'); 
+        setOrdenes(response.data);
+      } catch (error) {
+        console.error('Error al obtener órdenes:', error);
+      }
+    };
+
+    const fetchProductos = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/api/inventario/productos');
+        setProductos(response.data);
+      } catch (error) {
+        console.error('Error al obtener productos:', error);
+      }
+    };
+
+
+    fetchOrdenes();
+    fetchProductos();
+    
+  }, []);
+
+  const productosMap = new Map(productos.map(producto => [producto._id, producto.nombre_producto]));
+
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
@@ -58,7 +81,7 @@ export default function AdminDashboard() {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            Panel de Administración
+            Órdenes
           </Typography>
           <IconButton color="inherit">
             <Notifications />
@@ -92,7 +115,7 @@ export default function AdminDashboard() {
               </ListItemIcon>
               {sidebarOpen && <ListItemText primary="Inicio" />}
             </ListItem>
-            
+
             <ListItem button onClick={() => handleNavigation("/users")}>
               <ListItemIcon>
                 <Assignment />
@@ -106,7 +129,6 @@ export default function AdminDashboard() {
               </ListItemIcon>
               {sidebarOpen && <ListItemText primary="Usuarios" />}
             </ListItem>
-
             <ListItem button onClick={() => handleNavigation("/catalogAdmin")}>
               <ListItemIcon>
                 <Inventory />
@@ -136,80 +158,32 @@ export default function AdminDashboard() {
       </Drawer>
 
       {/* Main Content */}
-      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-        <Toolbar />
-        <Grid container spacing={3}>
-          {/* Cards for different statistics */}
-          <Grid item xs={12} sm={6} md={3}>
-            <Card sx={{ height: "100%" }}>
+      
+      <Box component="main" sx={{ flexGrow: 1, p: 3, mt: 10 }}>
+      <Grid container spacing={3}>
+        {ordenes.map((orden) => (
+          <Grid item xs={12} sm={6} md={4} key={orden.id_orden}>
+            <Card sx={{ height: "100%", mb: 2  }}>
               <CardContent>
-                <Typography variant="subtitle1">Usuarios Registrados</Typography>
-                <Typography variant="h4" color="#CA6DF2">
-                  1,234
-                </Typography>
-                <Typography variant="caption" color="textSecondary">
-                  +20% comparado con el mes pasado
-                </Typography>
+                <Typography variant="subtitle1">Orden ID: {orden.id_orden}</Typography>
+                <Typography variant="body1" color="#CA6DF2"><strong>Estado:</strong> <span style={{ color: 'black' }}>{orden.estado}</span> </Typography>
+                <Typography variant="body1"><strong>Cliente:</strong> {orden.cliente?.nombre || 'Desconocido'}</Typography> {/* Asegúrate de tener el campo correcto */}
+                <Typography variant="body1"><strong>Total:</strong> ${orden.total}</Typography>
+                <Typography variant="body1"><strong>Observaciones:</strong> {orden.observaciones || 'N/A'}</Typography>
+                <Typography variant="body2" color="#CA6DF2"><strong>Productos:</strong></Typography>
+                <ul>
+                  {orden.productos.map((productoId) => (
+                    <li key={productoId}>{productosMap.get(productoId) || 'Producto no encontrado'}</li>
+                  ))}
+                </ul>
+                <Typography variant="body2"><strong>Subtotales:</strong> ${orden.subtotalesProductos.join(', $')}</Typography>
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Card sx={{ height: "100%" }}>
-              <CardContent>
-                <Typography variant="subtitle1">Órdenes Procesadas</Typography>
-                <Typography variant="h4" color="#CA6DF2">
-                  345
-                </Typography>
-                <Typography variant="caption" color="textSecondary">
-                  +15% comparado con la semana pasada
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Card sx={{ height: "100%" }}>
-              <CardContent>
-                <Typography variant="subtitle1">Productos Disponibles</Typography>
-                <Typography variant="h4" color="#CA6DF2">
-                  789
-                </Typography>
-                <Typography variant="caption" color="textSecondary">
-                  +5 nuevos productos agregados
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Card sx={{ height: "100%" }}>
-              <CardContent>
-                <Typography variant="subtitle1">Productos con Inventario Bajo</Typography>
-                <Typography variant="h4" color="error">
-                  23
-                </Typography>
-                <Typography variant="caption" color="textSecondary">
-                  Requiere atención inmediata
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
+        ))}
+      </Grid>
+    </Box>
 
-        {/* Sales Overview Chart */}
-        <Card sx={{ mt: 4 }}>
-          <CardContent>
-            <Typography variant="h6">Resumen de Ventas</Typography>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={salesData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="sales" fill="#B86AD9" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </Box>
     </Box>
   );
 }

@@ -204,18 +204,18 @@ export default function Carrito() {
   // Función para crear la factura
   const handleCreateInvoice = async () => {
     try {
-      const token = Cookies.get('token');
-      if (!token) {
-        console.error('Token no encontrado');
-        return;
-      }
+        const token = Cookies.get('token');
+        if (!token) {
+            console.error('Token no encontrado');
+            return;
+        }
 
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        withCredentials: true,
-      };
+        const config = {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+            withCredentials: true,
+        };
 
       // Crear los datos para la factura
       const facturaData = {
@@ -235,19 +235,19 @@ export default function Carrito() {
       // Usar la URL correcta del endpoint
       const response = await axios.post('http://localhost:3000/api/factura/factura/crear', facturaData, config);
 
-      if (response.status === 201) {
-        console.log('Factura creada con éxito:', response.data);
-        setOpenInvoice(false);
-        alert('Factura creada y enviada por correo.');
-        setCartItems([]);
-      } else {
-        console.error('Error al crear la factura:', response);
-      }
+        if (response.status === 201) {
+            console.log('Factura creada con éxito:', response.data);
+            setOpenInvoice(false);
+            alert('Factura creada y enviada por correo.');
+            setCartItems([]); // Vacía el carrito después de crear la factura
+        } else {
+            console.error('Error al crear la factura:', response);
+        }
     } catch (error) {
-      console.error('Error al crear la factura:', error);
-      alert('Hubo un error al crear la factura, por favor intenta nuevamente.');
+        console.error('Error al crear la factura:', error);
+        alert('Hubo un error al crear la factura, por favor intenta nuevamente.');
     }
-  };
+};
 
 
   return (
@@ -355,39 +355,66 @@ export default function Carrito() {
 
       {/* Modal para mostrar la factura */}
       <Dialog open={openInvoice} onClose={handleCloseInvoice} maxWidth="md" fullWidth>
-        <DialogTitle>Factura</DialogTitle>
-        <DialogContent>
-          <Typography variant="h6" sx={{ marginBottom: 2 }}>
-            Cliente: {user.nombre || 'Nombre del Cliente'}
-          </Typography>
-          <Typography variant="body1">Dirección: {user.direccion || 'Sin dirección'}</Typography>
-          <Typography variant="body1">Ciudad: {user.ciudad || 'Sin ciudad'}</Typography>
-          <Typography variant="body1">Teléfono: {user.telefono || 'Sin teléfono'}</Typography>
-          <Typography variant="body1" sx={{ marginTop: 2 }}>
-            Fecha: {new Date().toLocaleDateString()}
-          </Typography>
-          <Box sx={{ marginTop: 3 }}>
-            <List>
-              {cartItems.map((item, index) => (
-                <ListItem key={item.id_producto}>
-                  <ListItemText
-                    primary={`${index + 1}. ${item.nombre_producto}`}
-                    secondary={`Cantidad: ${item.cantidad} - Precio Unitario: $${item.precio_unitario} - Total: $${item.precio_unitario * item.cantidad}`}
-                  />
-                </ListItem>
-              ))}
-            </List>
-          </Box>
-          <Typography variant="h5" sx={{ fontWeight: 'bold', marginTop: 2 }}>
-            Total Factura: ${totalCarrito.toFixed(2)}
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCreateInvoice} variant="contained" sx={{ backgroundColor: '#CA6DF2', color: 'white' }}>
-            Aceptar
-          </Button>
-        </DialogActions>
-      </Dialog>
+  <DialogTitle sx={{ 
+      textAlign: 'center', 
+      fontWeight: 'bold', 
+      fontSize: '1.5rem', 
+      backgroundColor: '#f5f5f5', 
+      color: '#CA6DF2',  // Color para el título
+      borderBottom: `2px solid #CA6DF2` 
+  }}>
+    Factura
+  </DialogTitle>
+  <DialogContent sx={{ padding: 4, backgroundColor: '#fbfbfb' }}>
+    <Box sx={{ 
+        borderBottom: `2px solid #CA6DF2`, 
+        paddingBottom: 2, 
+        marginBottom: 3 
+    }}>
+      <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#CA6DF2', marginBottom: 1 }}>
+        Cliente: {user.nombre || 'Nombre del Cliente'}
+      </Typography>
+      <Typography variant="body1">Dirección: {user.direccion || 'Sin dirección'}</Typography>
+      <Typography variant="body1">Ciudad: {user.ciudad || 'Sin ciudad'}</Typography>
+      <Typography variant="body1">Teléfono: {user.telefono || 'Sin teléfono'}</Typography>
+      <Typography variant="body1" sx={{ marginTop: 1 }}>
+        Fecha: {new Date().toLocaleDateString()}
+      </Typography>
     </Box>
+
+    <Box sx={{ 
+        marginTop: 3, 
+        border: `1px solid #CA6DF2`, 
+        borderRadius: 1, 
+        padding: 2, 
+        backgroundColor: '#fff' 
+    }}>
+      <List disablePadding>
+        {cartItems.map((item, index) => (
+          <ListItem key={item.id_producto} sx={{ padding: 1, borderBottom: '1px solid #e0e0e0' }}>
+            <ListItemText
+              primary={<Typography sx={{ fontWeight: 'bold', color: '#CA6DF2' }}>{`${index + 1}. ${item.nombre_producto}`}</Typography>}
+              secondary={
+                <Typography variant="body2" color="textSecondary">
+                  {`Cantidad: ${item.cantidad} - Precio Unitario: $${item.precio_unitario.toFixed(2)} - Total: $${(item.precio_unitario * item.cantidad).toFixed(2)}`}
+                </Typography>
+              }
+            />
+          </ListItem>
+        ))}
+      </List>
+    </Box>
+
+    <Typography variant="h5" sx={{ fontWeight: 'bold', textAlign: 'right', color: '#CA6DF2', marginTop: 3 }}>
+      Total Factura: ${totalCarrito.toFixed(2)}
+    </Typography>
+  </DialogContent>
+  <DialogActions sx={{ padding: 2, backgroundColor: '#f5f5f5', borderTop: `2px solid #CA6DF2` }}>
+    <Button onClick={handleCreateInvoice} variant="contained" sx={{ backgroundColor: '#CA6DF2', color: 'white', fontWeight: 'bold' }}>
+      Aceptar
+    </Button>
+  </DialogActions>
+</Dialog>
+</Box>
   );
 }
