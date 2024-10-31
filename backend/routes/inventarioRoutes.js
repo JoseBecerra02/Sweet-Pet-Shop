@@ -65,7 +65,7 @@ router.delete('/producto/:id', async (req, res) => {
   }
 });
 router.post('/crear-producto', async (req, res) => {
-  const {nombre_producto, categoria, cantidad, precio, ruta, descripcion } = req.body;
+  const {nombre_producto, categoria, cantidad, precio, ruta, descripcion, umbral } = req.body;
 
   if ( !nombre_producto || !categoria || !cantidad || !precio || !ruta) {
     return res.status(400).json({ message: 'Todos los campos requeridos deben ser proporcionados' });
@@ -78,7 +78,8 @@ router.post('/crear-producto', async (req, res) => {
       cantidad,
       precio,
       ruta,
-      descripcion
+      descripcion,
+      umbral
     });
 
     await nuevoProducto.save();
@@ -104,7 +105,8 @@ router.put('/producto/:id', async (req, res) => {
       cantidad,
       precio,
       ruta,
-      descripcion
+      descripcion,
+      umbral
     }, { new: true });
 
     if (!productoActualizado) {
@@ -146,6 +148,18 @@ router.post('/', async (req, res) => {
   } catch (err) {
     console.error('Error al agregar producto:', err);
     res.status(500).json({ error: 'Error al agregar producto' });
+  }
+});
+// Ruta para actualizar el campo umbral de todos los productos
+router.put('/umbral/:valor', async (req, res) => {
+  const { valor } = req.params;
+
+  try {
+    const resultado = await Inventario.updateMany({}, { umbral: valor });
+    res.json({ message: 'Umbrales actualizados correctamente', resultado });
+  } catch (error) {
+    console.error('Error al actualizar los umbrales:', error);
+    res.status(500).json({ message: 'Error al actualizar los umbrales' });
   }
 });
 
