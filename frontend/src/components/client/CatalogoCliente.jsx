@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Grid, Card, CardContent, CardMedia, Typography, Box, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button, Snackbar, Alert } from '@mui/material';
 import { ShoppingCart } from '@mui/icons-material';
 import axios from 'axios';
+import Cookies from 'js-cookie';
+
 
 const defaultImageUrl = 'https://img.freepik.com/foto-gratis/perro-lindo-arte-digital_23-2151150544.jpg';
 
@@ -32,6 +34,7 @@ export default function CatalogoCliente() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [user, setUser] = useState({});
 
   useEffect(() => {
     axios.get('http://localhost:3000/api/categoria')
@@ -67,6 +70,32 @@ export default function CatalogoCliente() {
     }
   }, [categories]);
 
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = Cookies.get('token');
+        if (!token) {
+          console.error('Token no encontrado');
+          return;
+        }
+  
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          withCredentials: true,
+        };
+  
+        const response = await axios.get('http://localhost:3000/api/usuarios/perfil', config);
+        setUser(response.data.user);
+      } catch (error) {
+        console.error('Error al obtener el perfil:', error);
+      }
+    };
+  
+    fetchProfile();
+  }, []);
+  
   const handleOpenDialog = (product) => {
     setSelectedProduct(product);
     setDialogOpen(true);
@@ -77,20 +106,43 @@ export default function CatalogoCliente() {
     setSelectedProduct(null);
   };
 
-  const handleAddToCart = (product) => {
-    let cart = JSON.parse(localStorage.getItem('cart')) || [];
-    const existingItem = cart.find((item) => item.id === product._id);
-    if (existingItem) {
-      cart = cart.map((item) =>
-        item.id === product._id
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
-      );
-    } else {
-      cart.push({ ...product, id: product._id, quantity: 1 });
-    }
-    localStorage.setItem('cart', JSON.stringify(cart));
-    setSnackbarOpen(true);
+  const handleAddToCart = async (product) => {
+      try {
+          const token = Cookies.get('token');
+          if (!token) {
+              console.error('Token no encontrado');
+              alert('Por favor, inicia sesión para agregar productos al carrito.');
+              return;
+          }
+
+          const config = {
+              headers: {
+                  Authorization: `Bearer ${token}`,
+              },
+              withCredentials: true,
+          };
+
+          // Datos del carrito para enviar al backend
+          const carritoData = {
+              id_usuario: user._id,
+              id_producto: product._id,
+              cantidad: 1,
+          };
+
+          const response = await axios.post('http://localhost:3000/api/carrito/carrito/agregar', carritoData, config);
+          if (response.status === 200) {
+              console.log('Producto agregado al carrito con éxito:', response.data);
+              setSnackbarOpen(true);
+          } else {
+              console.error('Error al agregar el producto al carrito:', response);
+          }
+      } catch (error) {
+          if (error.response && error.response.status === 404) {
+              console.error('Error 404: Endpoint no encontrado. Verifica la URL.');
+          } else {
+              console.error('Error al agregar el producto al carrito:', error.message);
+          }
+      }
   };
 
   const handleCloseSnackbar = () => {
@@ -142,7 +194,7 @@ export default function CatalogoCliente() {
       </Box>
       <Grid container spacing={3}>
         {filteredProducts.map((product) => (
-          <Grid item xs={12} sm={6} md={4} key={product._id.$oid}>
+          <Grid item xs={12} sm={6} md={4} key={product._id}>
             <Card
               onClick={() => handleOpenDialog(product)}
               sx={{ cursor: 'pointer', transition: 'transform 0.3s', '&:hover': { transform: 'scale(1.05)' } }}
