@@ -5,7 +5,9 @@ const FacturaSchema = new mongoose.Schema({
     id_factura: {
         type: Number,
         unique: true,
-        required: true
+        required: true,
+        default: 0,
+        min: 0
     },
     id_usuario: {
         type: mongoose.Schema.Types.ObjectId,

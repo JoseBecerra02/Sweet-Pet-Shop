@@ -23,8 +23,8 @@ const sendSuspensionAlertEmail = async (to, name) => {
 };
 
 // Función para enviar correo con la factura de la compra
-const sendInvoiceEmail = async (to, name, invoiceDetails) => {
-  const { id_factura, productos, valor_total, fecha } = invoiceDetails;
+const sendInvoiceEmail = async (to, invoiceDetails) => {
+  const { id_factura, id_nombre, productos, valor_total, fecha } = invoiceDetails;
 
   // Crea una tabla HTML para los productos
   const productsTableRows = productos.map(product => `
@@ -42,7 +42,7 @@ const sendInvoiceEmail = async (to, name, invoiceDetails) => {
       subject: "Factura de tu Compra",
       html: `
           <h1>Factura #${id_factura}</h1>
-          <p>Hola ${name}, gracias por tu compra.</p>
+          <p>Hola ${id_nombre}, gracias por tu compra.</p>
           <p>Detalles de la factura:</p>
           <p>Fecha: ${new Date(fecha).toLocaleDateString()}</p>
           <table border="1" cellpadding="5" cellspacing="0">

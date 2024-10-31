@@ -80,13 +80,22 @@ router.put('/carrito/actualizar', async (req, res) => {
 });
 
 // Ruta para obtener el total del carrito
-router.get('/carrito', async (req, res) => {
-    const { id_usuario } = req.body;
+router.get('/carrito/:id_usuario', async (req, res) => {
+    const { id_usuario } = req.params;
 
     try {
+        // Hacemos la búsqueda del carrito y hacemos el populate del producto
         const carrito = await Carrito.find({ id_usuario }).populate('producto');
+        
         let total = 0;
         const items = carrito.map(item => {
+            if (!item.producto) {
+                console.error(`Producto no encontrado para el item con id_producto: ${item.producto}`);
+                // Si el producto no se encuentra, no incluimos este item
+                return null;
+            }
+
+            // Construir cada item solo si el producto existe
             const subtotal = item.producto.precio * item.cantidad;
             total += subtotal;
             return {
@@ -96,12 +105,15 @@ router.get('/carrito', async (req, res) => {
                 precio_unitario: item.producto.precio,
                 subtotal: subtotal
             };
-        });
+        }).filter(Boolean); // Filtrar los items nulos
 
         res.status(200).json({ items, total });
     } catch (error) {
+        console.error('Error al obtener el total del carrito:', error);
         res.status(500).json({ error: 'Error al obtener el total del carrito' });
     }
 });
+
+
 
 module.exports = router;
