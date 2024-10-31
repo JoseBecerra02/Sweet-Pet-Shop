@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 // routes/usuarioRoutes.js
 const express = require('express');
 const router = express.Router();
@@ -838,11 +837,9 @@ router.get('/informes/ventas/categorias/excel', async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
-=======
 const express = require('express');
 const router = express.Router();
 const Carrito = require('../models/Carrito');
-const Factura = require('../models/Factura');
 const { sendInvoiceEmail } = require('../controllers/MailController');
 
 // Ruta para crear una factura a partir del carrito
@@ -911,7 +908,6 @@ router.get('/facturas', async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: 'Error al obtener las facturas' });
     }
->>>>>>> 2901dcc64566a150bb2aeae3b495b88dae9b225e
 });
 
-module.exports = router;
+module.exports = router;})

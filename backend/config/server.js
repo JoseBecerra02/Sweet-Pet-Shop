@@ -9,7 +9,6 @@ const inventarioRoutes = require('../routes/inventarioRoutes'); // Nueva ruta
 const categoriaRoutes = require('../routes/categoriaRoutes'); // Asegúrate de tener esta línea
 const usuarioRoutes = require('../routes/usuarioRoutes');
 const carritoRoutes = require('../routes/carritoRoutes');
-const facturaRoutes = require('../routes/facturaRoutes');
 
 const app = express();
 
@@ -39,7 +38,6 @@ app.use('/api/usuarios', usuarioRoutes); // Asegúrate de que esta línea exista
 app.use('/api/inventario', inventarioRoutes); 
 app.use('/api/categoria', categoriaRoutes);
 app.use('/api/carrito', carritoRoutes);
-app.use('/api/factura', facturaRoutes);
 app.use('/api/factura', facturaRoutes); 
 app.use('/api/orden', ordenRoutes); 
 
