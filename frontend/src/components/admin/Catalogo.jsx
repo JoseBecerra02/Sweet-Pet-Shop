@@ -55,6 +55,8 @@ const storage = getStorage(app);
 export default function Catalogo() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [umbralDialogOpen, setUmbralDialogOpen] = useState(false);
+  const [umbralMinimo, setUmbralMinimo] = useState(0);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [products, setProducts] = useState([]);
   const [newProduct, setNewProduct] = useState({
@@ -105,6 +107,14 @@ export default function Catalogo() {
     setDialogOpen(false);
   };
 
+  const handleUmbralDialogOpen = () => {
+    setUmbralDialogOpen(true);
+  };
+
+  const handleUmbralDialogClose = () => {
+    setUmbralDialogOpen(false);
+  };
+
   const handleCategoryDialogOpen = () => {
     setCategoryDialogOpen(true);
   };
@@ -118,6 +128,12 @@ export default function Catalogo() {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewProduct({ ...newProduct, [name]: value });
+  };
+
+  const handleSaveUmbral = () => {
+    // Aquí puedes llamar a la API o aplicar la lógica para actualizar el umbral mínimo de los productos
+    console.log("Umbral mínimo establecido:", umbralMinimo);
+    setUmbralDialogOpen(false);
   };
 
   const handleAddProduct = async () => {
@@ -260,7 +276,10 @@ export default function Catalogo() {
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             Catálogo de Productos
           </Typography>
-          <Button variant="contained" color="primary" onClick={handleDialogOpen}>
+          <Button variant="contained" color="primary" onClick={handleUmbralDialogOpen}>
+            ✎ UMBRAL MÍNIMO
+          </Button>
+          <Button variant="contained" color="primary" onClick={handleDialogOpen} sx={{ ml: 2 }} >
             + AGREGAR PRODUCTO
           </Button>
           <Button variant="contained" color="secondary" onClick={handleCategoryDialogOpen} sx={{ ml: 2 }}>
@@ -550,6 +569,28 @@ export default function Catalogo() {
             <Button onClick={editCategoryId ? handleSaveClick : handleAddCategory} color="primary">
               {editCategoryId ? "Guardar" : "Agregar"}
             </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Dialog para editar umbral mínimo de stock */}
+        <Dialog open={umbralDialogOpen} onClose={handleUmbralDialogClose}>
+          <DialogTitle>Establecer Umbral Mínimo de Stock</DialogTitle>
+          <DialogContent>
+            <DialogContentText>Establezca el umbral mínimo de stock para los productos.</DialogContentText>
+            <TextField
+              autoFocus
+              margin="dense"
+              label="Umbral Mínimo"
+              type="number"
+              fullWidth
+              variant="outlined"
+              value={umbralMinimo}
+              onChange={(e) => setUmbralMinimo(e.target.value)}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleUmbralDialogClose}>Cancelar</Button>
+            <Button onClick={handleSaveUmbral} color="primary">Guardar</Button>
           </DialogActions>
         </Dialog>
       </Box>
