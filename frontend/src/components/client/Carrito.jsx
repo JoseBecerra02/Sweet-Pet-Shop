@@ -220,6 +220,8 @@ export default function Carrito() {
       // Crear los datos para la factura
       const facturaData = {
         id_usuario: user._id,
+        id_correo: user.correo,
+        id_nombre: user.nombre,
         productos: cartItems.map(item => ({
           id_producto: item.id_producto,
           nombre_producto: item.nombre_producto,
@@ -231,7 +233,7 @@ export default function Carrito() {
       };
 
       // Usar la URL correcta del endpoint
-      const response = await axios.post('http://localhost:3000/api/factura/crear', facturaData, config);
+      const response = await axios.post('http://localhost:3000/api/factura/factura/crear', facturaData, config);
 
       if (response.status === 201) {
         console.log('Factura creada con éxito:', response.data);
