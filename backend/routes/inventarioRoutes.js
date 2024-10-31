@@ -150,5 +150,17 @@ router.post('/', async (req, res) => {
     res.status(500).json({ error: 'Error al agregar producto' });
   }
 });
+// Ruta para actualizar el campo umbral de todos los productos
+router.put('/umbral/:valor', async (req, res) => {
+  const { valor } = req.params;
+
+  try {
+    const resultado = await Inventario.updateMany({}, { umbral: valor });
+    res.json({ message: 'Umbrales actualizados correctamente', resultado });
+  } catch (error) {
+    console.error('Error al actualizar los umbrales:', error);
+    res.status(500).json({ message: 'Error al actualizar los umbrales' });
+  }
+});
 
 // module.exports = router;
