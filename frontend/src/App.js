@@ -152,6 +152,7 @@ const ContentBox = styled(Box)({
           <Route path="/catalogAdmin" element={isLoggedIn && userRole === 'admin' ? <Catalogo /> : <Navigate to="/" />} />
           <Route path="/Users" element={isLoggedIn && userRole === 'admin' ? <Users /> : <Navigate to="/" />} />
           <Route path="/orders" element={isLoggedIn && userRole === 'admin' ? <Orders /> : <Navigate to="/" />} />
+          <Route path="/informes" element={isLoggedIn && userRole === 'admin' ? <Users /> : <Navigate to="/" />} />
 
           {/* Rutas para Cliente */}
           <Route path="/clienteapp" element={isLoggedIn && userRole === 'cliente' ? <ClienteDashboard /> : <Navigate to="/" />} />

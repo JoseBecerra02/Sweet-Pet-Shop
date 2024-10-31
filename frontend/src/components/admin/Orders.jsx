@@ -15,7 +15,7 @@ import {
   CardContent,
 } from "@mui/material";
 import Grid from '@mui/material/Grid2';
-import { Menu as MenuIcon, Notifications, Home, People, Inventory, ShoppingCart, Settings, Logout } from "@mui/icons-material";
+import { Menu as MenuIcon, Notifications, Home, People, Inventory, ShoppingCart, Settings, Logout, Assignment } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import Cookies from 'js-cookie';
 import axios from 'axios';
@@ -115,6 +115,14 @@ export default function Orders() {
               </ListItemIcon>
               {sidebarOpen && <ListItemText primary="Inicio" />}
             </ListItem>
+
+            <ListItem button onClick={() => handleNavigation("/users")}>
+              <ListItemIcon>
+                <Assignment />
+              </ListItemIcon>
+              {sidebarOpen && <ListItemText primary="Usuarios" />}
+            </ListItem>
+
             <ListItem button onClick={() => handleNavigation("/users")}>
               <ListItemIcon>
                 <People />

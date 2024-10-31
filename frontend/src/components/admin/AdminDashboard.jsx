@@ -15,7 +15,7 @@ import {
   CardContent,
 } from "@mui/material";
 import Grid from '@mui/material/Grid2';
-import { Menu as MenuIcon, Notifications, Home, People, Inventory, ShoppingCart, Settings, Logout } from "@mui/icons-material";
+import { Menu as MenuIcon, Notifications, Home, People, Inventory, ShoppingCart, Settings, Logout, Assignment } from "@mui/icons-material";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useNavigate } from "react-router-dom";
 import Cookies from 'js-cookie';
@@ -92,12 +92,21 @@ export default function AdminDashboard() {
               </ListItemIcon>
               {sidebarOpen && <ListItemText primary="Inicio" />}
             </ListItem>
+            
+            <ListItem button onClick={() => handleNavigation("/users")}>
+              <ListItemIcon>
+                <Assignment />
+              </ListItemIcon>
+              {sidebarOpen && <ListItemText primary="Usuarios" />}
+            </ListItem>
+
             <ListItem button onClick={() => handleNavigation("/users")}>
               <ListItemIcon>
                 <People />
               </ListItemIcon>
               {sidebarOpen && <ListItemText primary="Usuarios" />}
             </ListItem>
+
             <ListItem button onClick={() => handleNavigation("/catalogAdmin")}>
               <ListItemIcon>
                 <Inventory />
