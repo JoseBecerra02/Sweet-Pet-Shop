@@ -93,11 +93,11 @@ export default function AdminDashboard() {
               {sidebarOpen && <ListItemText primary="Inicio" />}
             </ListItem>
             
-            <ListItem button onClick={() => handleNavigation("/users")}>
+            <ListItem button onClick={() => handleNavigation("/informes")}>
               <ListItemIcon>
                 <Assignment />
               </ListItemIcon>
-              {sidebarOpen && <ListItemText primary="Usuarios" />}
+              {sidebarOpen && <ListItemText primary="Informes" />}
             </ListItem>
 
             <ListItem button onClick={() => handleNavigation("/users")}>

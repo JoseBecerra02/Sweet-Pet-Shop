@@ -158,11 +158,11 @@ export default function Usuarios() {
               {sidebarOpen && <ListItemText primary="Dashboard" />}
             </ListItem>
 
-            <ListItem button onClick={() => navigate("/users")}>
+            <ListItem button onClick={() => navigate("/informes")}>
               <ListItemIcon>
                 <Assignment />
               </ListItemIcon>
-              {sidebarOpen && <ListItemText primary="Usuarios" />}
+              {sidebarOpen && <ListItemText primary="Informes" />}
             </ListItem>
 
             <ListItem button onClick={() => navigate("/users")}>

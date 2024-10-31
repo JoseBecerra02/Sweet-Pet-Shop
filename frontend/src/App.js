@@ -14,6 +14,7 @@ import { styled } from '@mui/system';
 import CatalogoCliente from './components/client/CatalogoCliente';
 import Carrito from './components/client/Carrito';
 import Orders from './components/admin/Orders';
+import Informes from './components/admin/Informes';
 
 
 const App = () => {
@@ -152,7 +153,7 @@ const ContentBox = styled(Box)({
           <Route path="/catalogAdmin" element={isLoggedIn && userRole === 'admin' ? <Catalogo /> : <Navigate to="/" />} />
           <Route path="/Users" element={isLoggedIn && userRole === 'admin' ? <Users /> : <Navigate to="/" />} />
           <Route path="/orders" element={isLoggedIn && userRole === 'admin' ? <Orders /> : <Navigate to="/" />} />
-          <Route path="/informes" element={isLoggedIn && userRole === 'admin' ? <Users /> : <Navigate to="/" />} />
+          <Route path="/informes" element={isLoggedIn && userRole === 'admin' ? <Informes /> : <Navigate to="/" />} />
 
           {/* Rutas para Cliente */}
           <Route path="/clienteapp" element={isLoggedIn && userRole === 'cliente' ? <ClienteDashboard /> : <Navigate to="/" />} />

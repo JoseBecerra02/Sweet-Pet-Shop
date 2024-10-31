@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   AppBar,
   Toolbar,
@@ -11,18 +11,23 @@ import {
   ListItemText,
   CssBaseline,
   Box,
-  Card,
-  CardContent,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
 } from "@mui/material";
-import Grid from '@mui/material/Grid2';
 import { Menu as MenuIcon, Notifications, Home, People, Inventory, ShoppingCart, Settings, Logout, Assignment } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import Cookies from 'js-cookie';
-import axios from 'axios';
+import Cookies from "js-cookie";
+import axios from "axios";
 
-
-export default function Orders() {
+export default function Informes() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [invoices, setInvoices] = useState([]); // State to hold fetched invoices
   const navigate = useNavigate();
 
   const toggleDrawer = () => {
@@ -34,46 +39,59 @@ export default function Orders() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('user');
-    Cookies.remove('token'); 
-    Cookies.remove('rol'); 
-    window.location.href = '/'; 
+    Cookies.remove("token");
+    Cookies.remove("rol");
+    window.location.href = "/";
   };
 
-  const [ordenes, setOrdenes] = useState([]);
-  const [productos, setProductos] = useState([]);
+  // Function to fetch invoices
+  const fetchInvoices = async () => {
+    try {
+      const response = await axios.get("http://localhost:3000/api/factura/informes/ventas");
+      setInvoices(response.data); // Set invoices data to state
+    } catch (error) {
+      console.error("Error fetching invoices:", error);
+    }
+  };
 
-  
-  useEffect(() => {
-    const fetchOrdenes = async () => {
-      try {
-        const response = await axios.get('http://localhost:3000/api/orden'); 
-        setOrdenes(response.data);
-      } catch (error) {
-        console.error('Error al obtener órdenes:', error);
-      }
-    };
+  // Function to generate PDF
+  const generatePDF = async () => {
+    try {
+      const response = await axios.get("http://localhost:3000/api/factura/informes/ventas/pdf", {
+        responseType: "blob",
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "facturas.pdf");
+      document.body.appendChild(link);
+      link.click();
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+    }
+  };
 
-    const fetchProductos = async () => {
-      try {
-        const response = await axios.get('http://localhost:3000/api/inventario/productos');
-        setProductos(response.data);
-      } catch (error) {
-        console.error('Error al obtener productos:', error);
-      }
-    };
-
-
-    fetchOrdenes();
-    fetchProductos();
-    
-  }, []);
-
-  const productosMap = new Map(productos.map(producto => [producto._id, producto.nombre_producto]));
+  // Function to generate Excel
+  const generateExcel = async () => {
+    try {
+      const response = await axios.get("http://localhost:3000/api/factura/informes/ventas/excel", {
+        responseType: "blob",
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "facturas.xlsx");
+      document.body.appendChild(link);
+      link.click();
+    } catch (error) {
+      console.error("Error generating Excel:", error);
+    }
+  };
 
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
+
       {/* Top AppBar */}
       <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, backgroundColor: "#ffffff", color: "#2D2D2D" }}>
         <Toolbar>
@@ -81,7 +99,7 @@ export default function Orders() {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            Órdenes
+            Panel de Administración
           </Typography>
           <IconButton color="inherit">
             <Notifications />
@@ -115,7 +133,7 @@ export default function Orders() {
               </ListItemIcon>
               {sidebarOpen && <ListItemText primary="Inicio" />}
             </ListItem>
-
+            
             <ListItem button onClick={() => handleNavigation("/informes")}>
               <ListItemIcon>
                 <Assignment />
@@ -129,6 +147,7 @@ export default function Orders() {
               </ListItemIcon>
               {sidebarOpen && <ListItemText primary="Usuarios" />}
             </ListItem>
+
             <ListItem button onClick={() => handleNavigation("/catalogAdmin")}>
               <ListItemIcon>
                 <Inventory />
@@ -158,32 +177,51 @@ export default function Orders() {
       </Drawer>
 
       {/* Main Content */}
-      
-      <Box component="main" sx={{ flexGrow: 1, p: 3, mt: 10 }}>
-      <Grid container spacing={3}>
-        {ordenes.map((orden) => (
-          <Grid item xs={12} sm={6} md={4} key={orden.id_orden}>
-            <Card sx={{ height: "100%", mb: 2  }}>
-              <CardContent>
-                <Typography variant="subtitle1">Orden ID: {orden.id_orden}</Typography>
-                <Typography variant="body1" color="#CA6DF2"><strong>Estado:</strong> <span style={{ color: 'black' }}>{orden.estado}</span> </Typography>
-                <Typography variant="body1"><strong>Cliente:</strong> {orden.cliente?.nombre || 'Desconocido'}</Typography> {/* Asegúrate de tener el campo correcto */}
-                <Typography variant="body1"><strong>Total:</strong> ${orden.total}</Typography>
-                <Typography variant="body1"><strong>Observaciones:</strong> {orden.observaciones || 'N/A'}</Typography>
-                <Typography variant="body2" color="#CA6DF2"><strong>Productos:</strong></Typography>
-                <ul>
-                  {orden.productos.map((productoId) => (
-                    <li key={productoId}>{productosMap.get(productoId) || 'Producto no encontrado'}</li>
-                  ))}
-                </ul>
-                <Typography variant="body2"><strong>Subtotales:</strong> ${orden.subtotalesProductos.join(', $')}</Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
-    </Box>
+      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+        <Toolbar />
+        <Typography variant="h4">Informes de Facturación</Typography>
+        <Typography variant="body1" sx={{ mb: 3 }}>
+          Selecciona una opción para ver las facturas o exportarlas en diferentes formatos.
+        </Typography>
 
+        <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
+          <Button variant="contained" color="primary" onClick={fetchInvoices}>
+            Traer Facturas
+          </Button>
+          <Button variant="contained" color="secondary" onClick={generatePDF}>
+            Facturas en PDF
+          </Button>
+          <Button variant="contained" color="success" onClick={generateExcel}>
+            Facturas en Excel
+          </Button>
+        </Box>
+
+        {/* Table to display invoices */}
+        {invoices.length > 0 && (
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>ID</TableCell>
+                  <TableCell>Fecha</TableCell>
+                  <TableCell>Cliente</TableCell>
+                  <TableCell>Total</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {invoices.map((invoice) => (
+                  <TableRow key={invoice.id}>
+                    <TableCell>{invoice.id}</TableCell>
+                    <TableCell>{invoice.fecha}</TableCell>
+                    <TableCell>{invoice.cliente}</TableCell>
+                    <TableCell>{invoice.total}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
+      </Box>
     </Box>
   );
 }
