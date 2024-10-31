@@ -3,7 +3,9 @@ import { Grid, Card, CardContent, CardMedia, Typography, Box, Dialog, DialogTitl
 import { ShoppingCart } from '@mui/icons-material';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-
+import { TextField } from '@mui/material';
+import { InputAdornment } from '@mui/material';
+import { Search } from '@mui/icons-material';
 
 const defaultImageUrl = 'https://img.freepik.com/foto-gratis/perro-lindo-arte-digital_23-2151150544.jpg';
 
@@ -35,6 +37,7 @@ export default function CatalogoCliente() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [user, setUser] = useState({});
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     axios.get('http://localhost:3000/api/categoria')
@@ -155,6 +158,7 @@ export default function CatalogoCliente() {
       : [...selectedCategories, categoryId];
 
     setSelectedCategories(updatedSelectedCategories);
+    filterProducts(searchQuery, updatedSelectedCategories);
 
     if (updatedSelectedCategories.length === 0) {
       setFilteredProducts(products);
@@ -166,12 +170,39 @@ export default function CatalogoCliente() {
     }
   };
 
+  const handleSearchChange = (event) => {
+    const query = event.target.value;
+    setSearchQuery(query);
+    filterProducts(query, selectedCategories);
+  };
+
+  const filterProducts = (query, categories) => {
+    let filtered = products;
+  
+    // Filtrar por categoría si hay categorías seleccionadas
+    if (categories.length > 0) {
+      filtered = filtered.filter(product => categories.includes(product.categoria));
+    }
+  
+    // Filtrar por búsqueda si hay un término de búsqueda
+    if (query) {
+      filtered = filtered.filter(product =>
+        product.nombre_producto.toLowerCase().includes(query.toLowerCase()) ||
+        product.categoriaNombre.toLowerCase().includes(query.toLowerCase())
+      );
+    }
+  
+    setFilteredProducts(filtered);
+  };
+  
+
   return (
     <Box sx={{ padding: 3, marginTop: -3, backgroundColor: 'white' }}>
       <Typography variant="h4" gutterBottom sx={{ color: '#CA6DF2', textAlign: 'center', marginBottom: '40px', fontWeight: 'bold' }}>
         Catálogo de Productos
       </Typography>
-      <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', marginBottom: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
+      <Box sx={{ display: 'flex', gap: 2 }}>
         {categories.map((category) => (
           <Button
             key={category._id}
@@ -192,6 +223,44 @@ export default function CatalogoCliente() {
           </Button>
         ))}
       </Box>
+      <TextField
+        variant="outlined"
+        placeholder="Buscar productos..."
+        value={searchQuery}
+        onChange={handleSearchChange}
+        sx={{
+          marginLeft: 2,
+          width: '300px',
+          '& .MuiOutlinedInput-root': {
+            '& fieldset': {
+              borderColor: '#CA6DF2',
+            },
+            '&:hover fieldset': {
+              borderColor: '#B86AD9',
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: '#A55BC0',
+            },
+          },
+          '& .MuiInputBase-input': {
+            color: '#2D2D2D',
+            backgroundColor: 'white',
+            padding: '10px 14px',
+            borderRadius: '4px',
+          },
+          '& .MuiOutlinedInput-notchedOutline': {
+            borderRadius: '8px',
+          },
+        }}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <Search sx={{ color: '#CA6DF2' }} />
+            </InputAdornment>
+          ),
+        }}
+      />
+    </Box>
       <Grid container spacing={3}>
         {filteredProducts.map((product) => (
           <Grid item xs={12} sm={6} md={4} key={product._id}>
