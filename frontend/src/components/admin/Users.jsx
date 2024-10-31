@@ -27,7 +27,7 @@ import {
   DialogTitle,
   TextField,
 } from "@mui/material";
-import { Menu as MenuIcon, Home, People, Inventory, ShoppingCart, Settings, Edit, Delete, Save } from "@mui/icons-material";
+import { Menu as MenuIcon, Home, People, Inventory, ShoppingCart, Settings, Edit, Delete, Save, Assignment } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 
 export default function Usuarios() {
@@ -157,6 +157,14 @@ export default function Usuarios() {
               </ListItemIcon>
               {sidebarOpen && <ListItemText primary="Dashboard" />}
             </ListItem>
+
+            <ListItem button onClick={() => navigate("/users")}>
+              <ListItemIcon>
+                <Assignment />
+              </ListItemIcon>
+              {sidebarOpen && <ListItemText primary="Usuarios" />}
+            </ListItem>
+
             <ListItem button onClick={() => navigate("/users")}>
               <ListItemIcon>
                 <People />
