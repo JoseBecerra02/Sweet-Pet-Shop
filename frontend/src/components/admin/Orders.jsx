@@ -16,8 +16,8 @@ import {
   Select,
   MenuItem,
   Button,
+  Grid,
 } from "@mui/material";
-import Grid from '@mui/material/Grid2';
 import { Menu as MenuIcon, Notifications, Home, People, Inventory, ShoppingCart, Settings, Logout, Assignment, Edit, Save } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import Cookies from 'js-cookie';
@@ -31,6 +31,7 @@ export default function Orders() {
   const [productos, setProductos] = useState([]);
   const [editMode, setEditMode] = useState(null); // Estado para rastrear cuál orden está en modo edición
   const [estadoTemporal, setEstadoTemporal] = useState(''); // Estado temporal para el estado seleccionado en modo edición
+  const [filtroEstado, setFiltroEstado] = useState(''); // Estado para el filtro de estado
   const navigate = useNavigate();
 
   const toggleDrawer = () => {
@@ -88,6 +89,15 @@ export default function Orders() {
     }
   };
 
+  const handleFiltroEstadoChange = (event) => {
+    setFiltroEstado(event.target.value);
+  };
+
+  // Filtra las órdenes según el estado seleccionado en el filtro
+  const ordenesFiltradas = filtroEstado
+    ? ordenes.filter((orden) => orden.estado === filtroEstado)
+    : ordenes;
+
   return (
     <Box sx={{ display: "flex" }}>
       <Box component="main" sx={{ flexGrow: 1, p: 3, mt: 7 }}>
@@ -95,9 +105,24 @@ export default function Orders() {
           <Typography variant="h4" sx={{ flexGrow: 1 }}>
             Gestión de Órdenes
           </Typography>
+          <Select
+            value={filtroEstado}
+            onChange={handleFiltroEstadoChange}
+            displayEmpty
+            sx={{ minWidth: 200 }}
+          >
+            <MenuItem value="">
+              <em>Todos los Estados</em>
+            </MenuItem>
+            {estadoOpciones.map((estado) => (
+              <MenuItem key={estado} value={estado}>
+                {estado.charAt(0).toUpperCase() + estado.slice(1)}
+              </MenuItem>
+            ))}
+          </Select>
         </Toolbar>
         <Grid container spacing={3}>
-          {ordenes.map((orden) => (
+          {ordenesFiltradas.map((orden) => (
             <Grid item xs={12} sm={6} md={4} key={orden.id_orden}>
               <Card sx={{ height: "100%", mb: 2 }}>
                 <CardContent>

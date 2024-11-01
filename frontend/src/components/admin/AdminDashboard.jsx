@@ -15,7 +15,7 @@ import {
   CardContent,
 } from "@mui/material";
 import Grid from '@mui/material/Grid';
-import { Menu as MenuIcon, Notifications, Home, People, Inventory, ShoppingCart, Settings, Logout, Assignment } from "@mui/icons-material";
+import { Menu as MenuIcon, Notifications, Home, People, Inventory, ShoppingCart, Logout, Assignment } from "@mui/icons-material";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import Cookies from 'js-cookie';
 import axios from "axios";
@@ -23,15 +23,6 @@ import Catalogo from './Catalogo';
 import Informes from './Informes';
 import Orders from './Orders';
 import Users from './Users';
-
-const salesData = [
-  { name: "Ene", sales: 4000 },
-  { name: "Feb", sales: 3000 },
-  { name: "Mar", sales: 5000 },
-  { name: "Abr", sales: 4500 },
-  { name: "May", sales: 6000 },
-  { name: "Jun", sales: 5500 },
-];
 
 export default function AdminDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -41,6 +32,7 @@ export default function AdminDashboard() {
   const [ordenesProcesadas, setOrdenesProcesadas] = useState(0);
   const [usuariosActivos, setUsuariosActivos] = useState(0);
   const [umbralMinimo, setUmbralMinimo] = useState(20); // Valor por defecto de 20
+  const [salesData, setSalesData] = useState([]); // Nueva variable de estado para los datos de ventas
 
   useEffect(() => {
     // Obtener productos y calcular métricas de inventario
@@ -81,10 +73,74 @@ export default function AdminDashboard() {
       }
     };
 
+    // Obtener los datos de ventas mensuales
+    const fetchSalesData = async () => {
+      try {
+        const response = await axios.get("http://localhost:3000/api/facturas/informes/ventas/mensual"); // Ruta del backend para ventas mensuales
+        const formattedData = response.data.map((item) => ({
+          name: `${item._id.mes}/${item._id.anio}`,
+          sales: item.totalVentas,
+        }));
+        setSalesData(formattedData);
+      } catch (error) {
+        console.error("Error al obtener datos de ventas:", error);
+      }
+    };
+
     fetchInventarioData();
     fetchOrdenesData();
     fetchUsuariosData();
+    fetchSalesData(); // Llamada para obtener los datos de ventas
   }, []);
+
+    // Función para obtener y procesar datos de inventario
+  const fetchInventarioData = async () => {
+    try {
+      const productosResponse = await axios.get("http://localhost:3000/api/inventario/productos");
+      const productos = productosResponse.data;
+      const totalCantidad = productos.reduce((acc, producto) => acc + producto.cantidad, 0);
+      const umbral = productos[0]?.umbral || 20;
+      const bajoInventario = productos.filter(producto => producto.cantidad < umbral).length;
+
+      setProductosDisponibles(totalCantidad);
+      setProductosBajoInventario(bajoInventario);
+      setUmbralMinimo(umbral);
+    } catch (error) {
+      console.error("Error al obtener datos de inventario:", error);
+    }
+  };
+
+  // Función para obtener el número total de órdenes
+  const fetchOrdenesData = async () => {
+    try {
+      const ordenesResponse = await axios.get("http://localhost:3000/api/orden");
+      setOrdenesProcesadas(ordenesResponse.data.length);
+    } catch (error) {
+      console.error("Error al obtener datos de órdenes:", error);
+    }
+  };
+
+  // Función para obtener los datos de ventas mensuales
+  const fetchSalesData = async () => {
+    try {
+      const response = await axios.get("http://localhost:3000/api/factura/informes/ventas/mensual");
+      const formattedData = response.data.map((item) => ({
+        name: `${item._id.mes}/${item._id.anio}`,
+        sales: item.totalVentas,
+      }));
+      setSalesData(formattedData);
+    } catch (error) {
+      console.error("Error al obtener datos de ventas:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchInventarioData();
+    fetchOrdenesData();
+    fetchSalesData();
+  }, []);
+
+
 
   const toggleDrawer = () => {
     setSidebarOpen(!sidebarOpen);
@@ -155,10 +211,10 @@ export default function AdminDashboard() {
               </Grid>
             </Grid>
             {/* Gráfico de resumen de ventas */}
-            <Card sx={{ mt: 4 }}>
+            <Card sx={{ mt: 4}}>
               <CardContent>
-                <Typography variant="h6">Resumen de Ventas</Typography>
-                <ResponsiveContainer width="100%" height={300}>
+                <Typography variant="h6">Resumen de Ventas Mensuales</Typography>
+                <ResponsiveContainer width="100%" height={300} style={{padding:'10px'}}>
                   <BarChart data={salesData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
