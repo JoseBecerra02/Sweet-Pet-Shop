@@ -7,13 +7,20 @@ const router = express.Router();
 router.post('/', async (req, res) => {
     try {
         console.log('Datos de la orden:', req.body);
+
+        // Generar el id_orden secuencialmente
+        const count = await Orden.countDocuments();
+        const nuevoIdOrden = count + 1;
+
+        // Crear la nueva orden con el id generado
         const nuevaOrden = new Orden({
-            id_orden: req.body.id_orden, 
+            id_orden: nuevoIdOrden,
             cliente: req.body.cliente,
             productos: req.body.productos,
             total: req.body.total,
             estado: req.body.estado,
-            fecha: req.body.fecha,
+            subtotalesProductos: req.body.subtotalesProductos,
+            observaciones: req.body.observaciones || '',
         });
 
         await nuevaOrden.save();
@@ -23,6 +30,7 @@ router.post('/', async (req, res) => {
         res.status(500).json({ error: 'Error al agregar orden' });
     }
 });
+
 
 // Obtener todas las órdenes
 router.get('/', async (req, res) => {
