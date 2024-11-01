@@ -14,8 +14,44 @@ import {
   TableRow,
   Paper,
   Toolbar,
+  IconButton,
 } from "@mui/material";
+import { styled } from "@mui/system";
 import axios from "axios";
+import PetsIcon from "@mui/icons-material/Pets";
+
+// Definimos colores personalizados
+const colors = {
+  primary: "#CA6DF2",
+  secondary: "#B86AD9",
+  textDark: "#2D2D2D",
+  textLight: "#FFFFFF",
+};
+
+// Estilos personalizados con styled
+const CustomCard = styled(Card)(({ theme }) => ({
+  backgroundColor: colors.textLight,
+  color: colors.textDark,
+  display: 'flex',
+  alignItems: 'center',
+  padding: '16px',
+  boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+  borderRadius: '10px',
+  border: `2px solid ${colors.primary}`,
+}));
+
+const CustomButton = styled(Button)(({ theme }) => ({
+  backgroundColor: colors.primary,
+  color: colors.textLight,
+  fontWeight: 'bold',
+  textTransform: 'none',
+  fontSize: '16px',
+  padding: '10px 20px',
+  borderRadius: '8px',
+  '&:hover': {
+    backgroundColor: colors.secondary,
+  },
+}));
 
 export default function AdminReports() {
   const [ventasMensuales, setVentasMensuales] = useState([]);
@@ -89,57 +125,62 @@ export default function AdminReports() {
   return (
     <Box sx={{ padding: 4 }}>
       <Toolbar>
-      <Typography variant="h4" gutterBottom sx={{marginTop:'50px'}}>
-        Informes de Administración
-      </Typography>
+        <Typography variant="h4" gutterBottom sx={{ marginTop: '50px', color: colors.textDark, fontWeight: 'bold' }}>
+          Informes de Administración
+        </Typography>
       </Toolbar>
       {/* Tarjetas de Resumen */}
       <Grid container spacing={2}>
         <Grid item xs={12} sm={6} md={3}>
-          <Card>
+          <CustomCard>
+            <IconButton sx={{ color: colors.primary }}>
+              <PetsIcon />
+            </IconButton>
             <CardContent>
-              <Typography variant="subtitle1">Total Ventas Mensuales</Typography>
-              <Typography variant="h5">{ventasMensuales.length}</Typography>
+              <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>Total Ventas Mensuales</Typography>
+              <Typography variant="h5" sx={{ fontWeight: 'bold', color: colors.secondary }}>{ventasMensuales.length}</Typography>
             </CardContent>
-          </Card>
+          </CustomCard>
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <Card>
+          <CustomCard>
+            <IconButton sx={{ color: colors.primary }}>
+              <PetsIcon />
+            </IconButton>
             <CardContent>
-              <Typography variant="subtitle1">Ventas por Usuario</Typography>
-              <Typography variant="h5">{ventasPorUsuario.length}</Typography>
+              <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>Ventas por Usuario</Typography>
+              <Typography variant="h5" sx={{ fontWeight: 'bold', color: colors.secondary }}>{ventasPorUsuario.length}</Typography>
             </CardContent>
-          </Card>
+          </CustomCard>
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <Card>
+          <CustomCard>
+            <IconButton sx={{ color: colors.primary }}>
+              <PetsIcon />
+            </IconButton>
             <CardContent>
-              <Typography variant="subtitle1">Ventas por Categoría</Typography>
-              <Typography variant="h5">{ventasPorCategoria.length}</Typography>
+              <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>Ventas por Categoría</Typography>
+              <Typography variant="h5" sx={{ fontWeight: 'bold', color: colors.secondary }}>{ventasPorCategoria.length}</Typography>
             </CardContent>
-          </Card>
+          </CustomCard>
         </Grid>
       </Grid>
 
       {/* Sección de Ventas Mensuales */}
-      <Typography variant="h5" sx={{ mt: 4 }}>
+      <Typography variant="h5" sx={{ mt: 4, color: colors.textDark, fontWeight: 'bold' }}>
         Ventas Mensuales
       </Typography>
       <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-        <Button variant="contained" color="primary" onClick={() => downloadPDF("http://localhost:3000/api/factura/informes/ventas/mensual/pdf")}>
-          Descargar PDF
-        </Button>
-        <Button variant="contained" color="success" onClick={() => downloadExcel("http://localhost:3000/api/factura/informes/ventas/mensual/excel")}>
-          Descargar Excel
-        </Button>
+        <CustomButton onClick={() => downloadPDF("http://localhost:3000/api/factura/informes/ventas/mensual/pdf")}>Descargar PDF</CustomButton>
+        <CustomButton onClick={() => downloadExcel("http://localhost:3000/api/factura/informes/ventas/mensual/excel")}>Descargar Excel</CustomButton>
       </Box>
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Mes/Año</TableCell>
-              <TableCell>Total Ventas</TableCell>
-              <TableCell>Cantidad de Ventas</TableCell>
+              <TableCell style={{ color: colors.textDark, fontWeight: 'bold' }}>Mes/Año</TableCell>
+              <TableCell style={{ color: colors.textDark, fontWeight: 'bold' }}>Total Ventas</TableCell>
+              <TableCell style={{ color: colors.textDark, fontWeight: 'bold' }}>Cantidad de Ventas</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -155,26 +196,22 @@ export default function AdminReports() {
       </TableContainer>
 
       {/* Sección de Ventas por Usuario */}
-      <Typography variant="h5" sx={{ mt: 4 }}>
+      <Typography variant="h5" sx={{ mt: 4, color: colors.textDark, fontWeight: 'bold' }}>
         Ventas por Usuario
       </Typography>
       <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-        <Button variant="contained" color="primary" onClick={() => downloadPDF("http://localhost:3000/api/factura/informes/ventas/usuarios/pdf")}>
-          Descargar PDF
-        </Button>
-        <Button variant="contained" color="success" onClick={() => downloadExcel("http://localhost:3000/api/factura/informes/ventas/usuarios/excel")}>
-          Descargar Excel
-        </Button>
+        <CustomButton onClick={() => downloadPDF("http://localhost:3000/api/factura/informes/ventas/usuarios/pdf")}>Descargar PDF</CustomButton>
+        <CustomButton onClick={() => downloadExcel("http://localhost:3000/api/factura/informes/ventas/usuarios/excel")}>Descargar Excel</CustomButton>
       </Box>
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Nombre Usuario</TableCell>
-              <TableCell>Correo</TableCell>
-              <TableCell>Estado</TableCell>
-              <TableCell>Total Ventas</TableCell>
-              <TableCell>Cantidad de Ventas</TableCell>
+              <TableCell style={{ color: colors.textDark, fontWeight: 'bold' }}>Nombre Usuario</TableCell>
+              <TableCell style={{ color: colors.textDark, fontWeight: 'bold' }}>Correo</TableCell>
+              <TableCell style={{ color: colors.textDark, fontWeight: 'bold' }}>Estado</TableCell>
+              <TableCell style={{ color: colors.textDark, fontWeight: 'bold' }}>Total Ventas</TableCell>
+              <TableCell style={{ color: colors.textDark, fontWeight: 'bold' }}>Cantidad de Ventas</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -192,24 +229,20 @@ export default function AdminReports() {
       </TableContainer>
 
       {/* Sección de Ventas por Categoría */}
-      <Typography variant="h5" sx={{ mt: 4 }}>
+      <Typography variant="h5" sx={{ mt: 4, color: colors.textDark, fontWeight: 'bold' }}>
         Ventas por Categoría
       </Typography>
       <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-        <Button variant="contained" color="primary" onClick={() => downloadPDF("http://localhost:3000/api/factura/informes/ventas/categorias/pdf")}>
-          Descargar PDF
-        </Button>
-        <Button variant="contained" color="success" onClick={() => downloadExcel("http://localhost:3000/api/factura/informes/ventas/categorias/excel")}>
-          Descargar Excel
-        </Button>
+        <CustomButton onClick={() => downloadPDF("http://localhost:3000/api/factura/informes/ventas/categorias/pdf")}>Descargar PDF</CustomButton>
+        <CustomButton onClick={() => downloadExcel("http://localhost:3000/api/factura/informes/ventas/categorias/excel")}>Descargar Excel</CustomButton>
       </Box>
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Nombre Categoría</TableCell>
-              <TableCell>Total Ventas</TableCell>
-              <TableCell>Cantidad de Ventas</TableCell>
+              <TableCell style={{ color: colors.textDark, fontWeight: 'bold' }}>Nombre Categoría</TableCell>
+              <TableCell style={{ color: colors.textDark, fontWeight: 'bold' }}>Total Ventas</TableCell>
+              <TableCell style={{ color: colors.textDark, fontWeight: 'bold' }}>Cantidad de Ventas</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
