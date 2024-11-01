@@ -4,6 +4,7 @@ const router = express.Router();
 const { googleLoginBackend } = require('../controllers/AuthController');
 const { authMiddleware } = require('../middlewares/authMiddleware');
 const Usuario = require('../models/Usuario'); 
+const { sendSuspensionAlertEmail } = require('../controllers/MailController');
 
 // Ruta protegida para obtener el perfil del usuario
 router.get('/perfil', authMiddleware, async (req, res) => {
@@ -146,6 +147,7 @@ router.put('/cambiar-estado', async (req, res) => {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
 
+    sendSuspensionAlertEmail(user.correo, user.nombre);
     res.json({ message: 'Estado del usuario cambiado con éxito', user });
   } catch (error) {
     console.error('Error al cambiar el estado del usuario:', error);

@@ -1,46 +1,83 @@
-// routes/usuarioRoutes.js
 const express = require('express');
 const router = express.Router();
-const { googleLoginBackend } = require('../controllers/AuthController');
-const { authMiddleware } = require('../middlewares/authMiddleware');
-const Inventario = require('../models/Inventario'); 
-const Categoria = require('../models/Categoria'); 
-const factura = require('../models/factura'); 
+const Carrito = require('../models/Carrito');
+const Factura = require('../models/Factura');
+const { sendInvoiceEmail } = require('../controllers/MailController');
 const PDFDocument = require('pdfkit'); // Importamos pdfkit
 const ExcelJS = require('exceljs');
 
-router.get('/facturas', async (req, res) => {
+// Ruta para crear una Factura a partir del carrito
+router.post('/Factura/crear', async (req, res) => {
+    const { id_usuario, id_correo, id_nombre, productos, valor_total } = req.body; 
+  
+    try {
+      // Crear la Factura directamente con los datos proporcionados
+      const nuevaFactura = new Factura({
+        id_usuario,
+        productos,
+        valor_total,
+        fecha: new Date()
+      });
+  
+      await nuevaFactura.save();
+    
+      // Enviar la Factura por correo (descomenta esta línea cuando configures `sendInvoiceEmail`)
+      console.log(id_correo);
+      
+      await sendInvoiceEmail(id_correo, {
+        id_Factura: nuevaFactura._id,
+        id_nombre,
+        productos: nuevaFactura.productos,
+        valor_total: nuevaFactura.valor_total,
+        fecha: nuevaFactura.fecha
+      });
+  
+      // Limpiar el carrito después de crear la Factura
+      await Carrito.deleteMany({ id_usuario });
+  
+      res.status(201).json({ message: 'Factura creada y enviada por correo', Factura: nuevaFactura });
+    } catch (error) {
+      console.error('Error al crear la Factura:', error);
+      res.status(500).json({ error: 'Error al crear la Factura' });
+    }
+  });  
+
+// Ruta para obtener las Facturas de un usuario  CLIENTE
+
+// router.get('/Facturas', async (req, res) => {
+//     const { id_usuario } = req.body;
+
+//     try {
+//         const Facturas = await Factura.find({ id_usuario }).populate('productos.id_producto');
+//         res.status(200).json(Facturas);
+//     } catch (error) {
+//         res.status(500).json({ error: 'Error al obtener las Facturas' });
+//     }
+// });
+
+router.get('/Facturas', async (req, res) => {
   try {
-    const facturas = await factura.find();
-    res.json(facturas);
+    const Facturas = await Factura.find();
+    res.json(Facturas);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-router.get('/facturas/:id', async (req, res) => {
+router.get('/Facturas/:id', async (req, res) => {
   try {
-    const factura = await factura.findById(req.params.id);
-    if (!factura) return res.status(404).json({ message: 'Factura not found' });
-    res.json(factura);
+    const Factura = await Factura.findById(req.params.id);
+    if (!Factura) return res.status(404).json({ message: 'Factura not found' });
+    res.json(Factura);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-router.post('/facturas', async (req, res) => {
-  const newFactura = new factura(req.body);
-  try {
-    const savedFactura = await newFactura.save();
-    res.status(201).json(savedFactura);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-});
 
-router.put('/facturas/:id', async (req, res) => {
+router.put('/Facturas/:id', async (req, res) => {
   try {
-    const updatedFactura = await factura.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const updatedFactura = await Factura.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!updatedFactura) return res.status(404).json({ message: 'Factura not found' });
     res.json(updatedFactura);
   } catch (err) {
@@ -48,9 +85,9 @@ router.put('/facturas/:id', async (req, res) => {
   }
 });
 
-router.delete('/facturas/:id', async (req, res) => {
+router.delete('/Facturas/:id', async (req, res) => {
   try {
-    const deletedFactura = await factura.findByIdAndDelete(req.params.id);
+    const deletedFactura = await Factura.findByIdAndDelete(req.params.id);
     if (!deletedFactura) return res.status(404).json({ message: 'Factura not found' });
     res.json({ message: 'Factura deleted' });
   } catch (err) {
@@ -62,7 +99,7 @@ router.delete('/facturas/:id', async (req, res) => {
 
 router.get('/informes/ventas', async (req, res) => {
   try {
-    const facturasCompletas = await factura.aggregate([
+    const FacturasCompletas = await Factura.aggregate([
       {
         $lookup: {
           from: 'usuarios',
@@ -92,7 +129,7 @@ router.get('/informes/ventas', async (req, res) => {
       { $unwind: "$categoriaInfo" },
       {
         $project: {
-          id_factura: "$_id",
+          id_Factura: "$_id",
           cantidad: 1,
           valor_total: 1,
           fecha: 1,
@@ -103,7 +140,7 @@ router.get('/informes/ventas', async (req, res) => {
       }
     ]);
 
-    res.json(facturasCompletas);
+    res.json(FacturasCompletas);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -111,7 +148,7 @@ router.get('/informes/ventas', async (req, res) => {
 
 router.get('/informes/ventas/mensual', async (req, res) => {
   try {
-    const ventasPorMes = await factura.aggregate([
+    const ventasPorMes = await Factura.aggregate([
       {
         $group: {
           _id: { 
@@ -135,7 +172,7 @@ router.get('/informes/ventas/mensual', async (req, res) => {
 
 router.get('/informes/ventas/usuarios', async (req, res) => {
   try {
-    const ventasPorUsuario = await factura.aggregate([
+    const ventasPorUsuario = await Factura.aggregate([
       {
         $lookup: {
           from: 'usuarios', // Nombre de la colección de usuarios
@@ -168,7 +205,7 @@ router.get('/informes/ventas/usuarios', async (req, res) => {
 
 router.get('/informes/ventas/categorias', async (req, res) => {
   try {
-    const ventasPorCategoria = await factura.aggregate([
+    const ventasPorCategoria = await Factura.aggregate([
       {
         $lookup: {
           from: 'inventarios',
@@ -212,7 +249,7 @@ router.get('/informes/ventas/pdf', async (req, res) => {
   const { page = 1, limit = 10 } = req.query;
 
   try {
-    const facturasCompletas = await factura.aggregate([
+    const FacturasCompletas = await Factura.aggregate([
       {
         $lookup: {
           from: 'usuarios',
@@ -242,7 +279,7 @@ router.get('/informes/ventas/pdf', async (req, res) => {
       { $unwind: "$categoriaInfo" },
       {
         $project: {
-          id_factura: "$_id",
+          id_Factura: "$_id",
           cantidad: 1,
           valor_total: 1,
           fecha: 1,
@@ -281,16 +318,16 @@ router.get('/informes/ventas/pdf', async (req, res) => {
     // Datos de la tabla
     let yOffset = 120; // Posición inicial en Y
 
-    facturasCompletas.forEach((factura) => {
+    FacturasCompletas.forEach((Factura) => {
       // Define el contenido de cada columna
       const rowData = [
-        factura.id_factura,
-        factura.nombre_usuario,
-        factura.nombre_producto,
-        factura.nombre_categoria,
-        factura.cantidad.toString(),
-        factura.valor_total.toString(),
-        factura.fecha.toString()
+        Factura.id_Factura,
+        Factura.nombre_usuario,
+        Factura.nombre_producto,
+        Factura.nombre_categoria,
+        Factura.cantidad.toString(),
+        Factura.valor_total.toString(),
+        Factura.fecha.toString()
       ];
 
       // Calcula la altura máxima de la fila
@@ -318,7 +355,7 @@ router.get('/informes/ventas/pdf', async (req, res) => {
 
 router.get('/informes/ventas/mensual/pdf', async (req, res) => {
   try {
-    const ventasPorMes = await factura.aggregate([
+    const ventasPorMes = await Factura.aggregate([
       {
         $group: {
           _id: {
@@ -399,7 +436,7 @@ router.get('/informes/ventas/mensual/pdf', async (req, res) => {
 
 router.get('/informes/ventas/usuarios/pdf', async (req, res) => {
   try {
-    const ventasPorUsuario = await factura.aggregate([
+    const ventasPorUsuario = await Factura.aggregate([
       {
         $lookup: {
           from: 'usuarios', // Nombre de la colección de usuarios
@@ -487,7 +524,7 @@ router.get('/informes/ventas/usuarios/pdf', async (req, res) => {
 
 router.get('/informes/ventas/categorias/pdf', async (req, res) => {
   try {
-    const ventasPorCategoria = await factura.aggregate([
+    const ventasPorCategoria = await Factura.aggregate([
       {
         $lookup: {
           from: 'inventarios',
@@ -581,7 +618,7 @@ router.get('/informes/ventas/categorias/pdf', async (req, res) => {
 //Informes excel
 router.get('/informes/ventas/excel', async (req, res) => {
   try {
-    const facturasCompletas = await factura.aggregate([
+    const FacturasCompletas = await Factura.aggregate([
       {
         $lookup: {
           from: 'usuarios',
@@ -611,7 +648,7 @@ router.get('/informes/ventas/excel', async (req, res) => {
       { $unwind: "$categoriaInfo" },
       {
         $project: {
-          id_factura: "$_id",
+          id_Factura: "$_id",
           cantidad: 1,
           valor_total: 1,
           fecha: 1,
@@ -628,7 +665,7 @@ router.get('/informes/ventas/excel', async (req, res) => {
 
     // Definir las columnas
     worksheet.columns = [
-      { header: 'ID Factura', key: 'id_factura', width: 15 },
+      { header: 'ID Factura', key: 'id_Factura', width: 15 },
       { header: 'Cantidad', key: 'cantidad', width: 10 },
       { header: 'Valor Total', key: 'valor_total', width: 15 },
       { header: 'Fecha', key: 'fecha', width: 20 },
@@ -638,8 +675,8 @@ router.get('/informes/ventas/excel', async (req, res) => {
     ];
 
     // Agregar filas al worksheet
-    facturasCompletas.forEach(factura => {
-      worksheet.addRow(factura);
+    FacturasCompletas.forEach(Factura => {
+      worksheet.addRow(Factura);
     });
 
     // Configurar el encabezado para la descarga del archivo
@@ -656,7 +693,7 @@ router.get('/informes/ventas/excel', async (req, res) => {
 
 router.get('/informes/ventas/mensual/excel', async (req, res) => {
   try {
-    const ventasPorMes = await factura.aggregate([
+    const ventasPorMes = await Factura.aggregate([
       {
         $group: {
           _id: { 
@@ -708,7 +745,7 @@ router.get('/informes/ventas/mensual/excel', async (req, res) => {
 
 router.get('/informes/ventas/usuarios/excel', async (req, res) => {
   try {
-    const ventasPorUsuario = await factura.aggregate([
+    const ventasPorUsuario = await Factura.aggregate([
       {
         $lookup: {
           from: 'usuarios', // Nombre de la colección de usuarios
@@ -773,7 +810,7 @@ router.get('/informes/ventas/usuarios/excel', async (req, res) => {
 
 router.get('/informes/ventas/categorias/excel', async (req, res) => {
   try {
-    const ventasPorCategoria = await factura.aggregate([
+    const ventasPorCategoria = await Factura.aggregate([
       {
         $lookup: {
           from: 'inventarios',
