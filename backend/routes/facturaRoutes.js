@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const Carrito = require('../models/Carrito');
 const Factura = require('../models/Factura');
-const { sendInvoiceEmail } = require('../controllers/MailController');
+const Inventario = require('../models/Inventario');
+const { sendInvoiceEmail, sendLowStockAlert } = require('../controllers/MailController');
 
 // Ruta para crear una factura a partir del carrito
 router.post('/factura/crear', async (req, res) => {
@@ -29,6 +30,32 @@ router.post('/factura/crear', async (req, res) => {
         valor_total: nuevaFactura.valor_total,
         fecha: nuevaFactura.fecha
       });
+
+      // Verificar umbral de inventario para cada producto
+      for (const item of productos) {
+        const productoInventario = await Inventario.findById(item.id_producto);
+        if (!productoInventario) continue; // Si el producto no existe en inventario, omite
+
+        console.log('Producto:', productoInventario);
+        console.log('Cantidad vendida:', item.cantidad);
+        console.log('Cantidad en inventario:', productoInventario.cantidad);
+        
+        // Restar la cantidad vendida del inventario
+        productoInventario.cantidad -= item.cantidad;
+        await productoInventario.save();
+
+        console.log('Cantidad en inventario:', productoInventario.cantidad);
+
+        // Compara cantidad en inventario con el umbral
+        if (productoInventario.cantidad < productoInventario.umbral) {
+            // Si la cantidad es menor al umbral, envía una alerta al administrador
+            await sendLowStockAlert('orrego.sebastian@correounivalle.edu.co', {
+                nombre_producto: productoInventario.nombre_producto,
+                cantidad_disponible: productoInventario.cantidad,
+                umbral: productoInventario.umbral
+            });
+        }
+    }
   
       // Limpiar el carrito después de crear la factura
       await Carrito.deleteMany({ id_usuario });

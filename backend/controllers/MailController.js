@@ -22,6 +22,17 @@ const sendSuspensionAlertEmail = async (to, name) => {
   await transporter.sendMail(mailOptions);
 };
 
+const sendLowStockAlert = async (adminEmail, { nombre_producto, cantidad_disponible, umbral }) => {
+  const mailOptions = {
+      from: '"Sweet Pet Shop" <SweetPetSchi@gmail.com>',
+      to: adminEmail,
+      subject: 'Alerta de escasez de inventario',
+      text: `El producto "${nombre_producto}" tiene una cantidad disponible de ${cantidad_disponible}, que está por debajo del umbral establecido (${umbral}).`
+  };
+  await transporter.sendMail(mailOptions);
+};
+
+
 // Función para enviar correo con la factura de la compra
 const sendInvoiceEmail = async (to, invoiceDetails) => {
   const { id_factura, id_nombre, productos, valor_total, fecha } = invoiceDetails;
@@ -70,5 +81,6 @@ const sendInvoiceEmail = async (to, invoiceDetails) => {
 module.exports = {
   sendWelcomeEmail,
   sendSuspensionAlertEmail,
-  sendInvoiceEmail
+  sendInvoiceEmail,
+  sendLowStockAlert
 };
