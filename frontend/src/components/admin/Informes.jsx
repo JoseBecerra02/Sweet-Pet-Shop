@@ -1,16 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
-  AppBar,
-  Toolbar,
-  Typography,
-  IconButton,
-  Drawer,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  CssBaseline,
   Box,
+  Typography,
+  Grid,
+  Card,
+  CardContent,
   Button,
   Table,
   TableBody,
@@ -19,209 +13,216 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Toolbar,
 } from "@mui/material";
-import { Menu as MenuIcon, Notifications, Home, People, Inventory, ShoppingCart, Settings, Logout, Assignment } from "@mui/icons-material";
-import { useNavigate } from "react-router-dom";
-import Cookies from "js-cookie";
 import axios from "axios";
 
-export default function Informes() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [invoices, setInvoices] = useState([]); // State to hold fetched invoices
-  const navigate = useNavigate();
+export default function AdminReports() {
+  const [ventasMensuales, setVentasMensuales] = useState([]);
+  const [ventasPorUsuario, setVentasPorUsuario] = useState([]);
+  const [ventasPorCategoria, setVentasPorCategoria] = useState([]);
+  const [facturas, setFacturas] = useState([]);
 
-  const toggleDrawer = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
+  useEffect(() => {
+    fetchVentasMensuales();
+    fetchVentasPorUsuario();
+    fetchVentasPorCategoria();
+  }, []);
 
-  const handleNavigation = (path) => {
-    navigate(path);
-  };
-
-  const handleLogout = () => {
-    Cookies.remove("token");
-    Cookies.remove("rol");
-    window.location.href = "/";
-  };
-
-  // Function to fetch invoices
-  const fetchInvoices = async () => {
+  // Funciones para obtener datos de la API
+  const fetchVentasMensuales = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/api/factura/informes/ventas");
-      setInvoices(response.data); // Set invoices data to state
+      const response = await axios.get("http://localhost:3000/api/factura/informes/ventas/mensual");
+      setVentasMensuales(response.data);
     } catch (error) {
-      console.error("Error fetching invoices:", error);
+      console.error("Error al obtener ventas mensuales:", error);
     }
   };
 
-  // Function to generate PDF
-  const generatePDF = async () => {
+  const fetchVentasPorUsuario = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/api/factura/informes/ventas/pdf", {
-        responseType: "blob",
-      });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", "facturas.pdf");
-      document.body.appendChild(link);
-      link.click();
+      const response = await axios.get("http://localhost:3000/api/factura/informes/ventas/usuarios");
+      setVentasPorUsuario(response.data);
     } catch (error) {
-      console.error("Error generating PDF:", error);
+      console.error("Error al obtener ventas por usuario:", error);
     }
   };
 
-  // Function to generate Excel
-  const generateExcel = async () => {
+  const fetchVentasPorCategoria = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/api/factura/informes/ventas/excel", {
-        responseType: "blob",
-      });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const response = await axios.get("http://localhost:3000/api/factura/informes/ventas/categorias");
+      setVentasPorCategoria(response.data);
+    } catch (error) {
+      console.error("Error al obtener ventas por categoría:", error);
+    }
+  };
+
+  // Funciones para descargar informes en PDF o Excel
+  const downloadPDF = async (url) => {
+    try {
+      const response = await axios.get(url, { responseType: "blob" });
+      const urlBlob = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", "facturas.xlsx");
+      link.href = urlBlob;
+      link.setAttribute("download", "informe.pdf");
       document.body.appendChild(link);
       link.click();
     } catch (error) {
-      console.error("Error generating Excel:", error);
+      console.error("Error al generar PDF:", error);
+    }
+  };
+
+  const downloadExcel = async (url) => {
+    try {
+      const response = await axios.get(url, { responseType: "blob" });
+      const urlBlob = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = urlBlob;
+      link.setAttribute("download", "informe.xlsx");
+      document.body.appendChild(link);
+      link.click();
+    } catch (error) {
+      console.error("Error al generar Excel:", error);
     }
   };
 
   return (
-    <Box sx={{ display: "flex" }}>
-      <CssBaseline />
+    <Box sx={{ padding: 4 }}>
+      <Toolbar>
+      <Typography variant="h4" gutterBottom sx={{marginTop:'50px'}}>
+        Informes de Administración
+      </Typography>
+      </Toolbar>
+      {/* Tarjetas de Resumen */}
+      <Grid container spacing={2}>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card>
+            <CardContent>
+              <Typography variant="subtitle1">Total Ventas Mensuales</Typography>
+              <Typography variant="h5">{ventasMensuales.length}</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card>
+            <CardContent>
+              <Typography variant="subtitle1">Ventas por Usuario</Typography>
+              <Typography variant="h5">{ventasPorUsuario.length}</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card>
+            <CardContent>
+              <Typography variant="subtitle1">Ventas por Categoría</Typography>
+              <Typography variant="h5">{ventasPorCategoria.length}</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
 
-      {/* Top AppBar */}
-      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, backgroundColor: "#ffffff", color: "#2D2D2D" }}>
-        <Toolbar>
-          <IconButton edge="start" color="inherit" onClick={toggleDrawer} sx={{ mr: 2 }}>
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            Panel de Administración
-          </Typography>
-          <IconButton color="inherit">
-            <Notifications />
-          </IconButton>
-          <IconButton color="inherit" onClick={handleLogout}>
-            <Logout />
-          </IconButton>
-        </Toolbar>
-      </AppBar>
-
-      {/* Sidebar */}
-      <Drawer
-        variant="permanent"
-        open={sidebarOpen}
-        sx={{
-          width: sidebarOpen ? 240 : 72,
-          flexShrink: 0,
-          [`& .MuiDrawer-paper`]: {
-            width: sidebarOpen ? 240 : 72,
-            boxSizing: "border-box",
-            transition: "width 0.3s",
-          },
-        }}
-      >
-        <Toolbar />
-        <Box sx={{ overflow: "auto" }}>
-          <List>
-            <ListItem button onClick={() => handleNavigation("/")}>
-              <ListItemIcon>
-                <Home />
-              </ListItemIcon>
-              {sidebarOpen && <ListItemText primary="Inicio" />}
-            </ListItem>
-            
-            <ListItem button onClick={() => handleNavigation("/informes")}>
-              <ListItemIcon>
-                <Assignment />
-              </ListItemIcon>
-              {sidebarOpen && <ListItemText primary="Informes" />}
-            </ListItem>
-
-            <ListItem button onClick={() => handleNavigation("/users")}>
-              <ListItemIcon>
-                <People />
-              </ListItemIcon>
-              {sidebarOpen && <ListItemText primary="Usuarios" />}
-            </ListItem>
-
-            <ListItem button onClick={() => handleNavigation("/catalogAdmin")}>
-              <ListItemIcon>
-                <Inventory />
-              </ListItemIcon>
-              {sidebarOpen && <ListItemText primary="Catálogo" />}
-            </ListItem>
-            <ListItem button onClick={() => handleNavigation("/orders")}>
-              <ListItemIcon>
-                <ShoppingCart />
-              </ListItemIcon>
-              {sidebarOpen && <ListItemText primary="Órdenes" />}
-            </ListItem>
-            <ListItem button onClick={() => handleNavigation("/settings")}>
-              <ListItemIcon>
-                <Settings />
-              </ListItemIcon>
-              {sidebarOpen && <ListItemText primary="Configuración" />}
-            </ListItem>
-            <ListItem button onClick={handleLogout}>
-              <ListItemIcon>
-                <Logout />
-              </ListItemIcon>
-              {sidebarOpen && <ListItemText primary="Cerrar Sesión" />}
-            </ListItem>
-          </List>
-        </Box>
-      </Drawer>
-
-      {/* Main Content */}
-      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-        <Toolbar />
-        <Typography variant="h4">Informes de Facturación</Typography>
-        <Typography variant="body1" sx={{ mb: 3 }}>
-          Selecciona una opción para ver las facturas o exportarlas en diferentes formatos.
-        </Typography>
-
-        <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
-          <Button variant="contained" color="primary" onClick={fetchInvoices}>
-            Traer Facturas
-          </Button>
-          <Button variant="contained" color="secondary" onClick={generatePDF}>
-            Facturas en PDF
-          </Button>
-          <Button variant="contained" color="success" onClick={generateExcel}>
-            Facturas en Excel
-          </Button>
-        </Box>
-
-        {/* Table to display invoices */}
-        {invoices.length > 0 && (
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>ID</TableCell>
-                  <TableCell>Fecha</TableCell>
-                  <TableCell>Cliente</TableCell>
-                  <TableCell>Total</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {invoices.map((invoice) => (
-                  <TableRow key={invoice.id}>
-                    <TableCell>{invoice.id}</TableCell>
-                    <TableCell>{invoice.fecha}</TableCell>
-                    <TableCell>{invoice.cliente}</TableCell>
-                    <TableCell>{invoice.total}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        )}
+      {/* Sección de Ventas Mensuales */}
+      <Typography variant="h5" sx={{ mt: 4 }}>
+        Ventas Mensuales
+      </Typography>
+      <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+        <Button variant="contained" color="primary" onClick={() => downloadPDF("http://localhost:3000/api/factura/informes/ventas/mensual/pdf")}>
+          Descargar PDF
+        </Button>
+        <Button variant="contained" color="success" onClick={() => downloadExcel("http://localhost:3000/api/factura/informes/ventas/mensual/excel")}>
+          Descargar Excel
+        </Button>
       </Box>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Mes/Año</TableCell>
+              <TableCell>Total Ventas</TableCell>
+              <TableCell>Cantidad de Ventas</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {ventasMensuales.map((venta, index) => (
+              <TableRow key={index}>
+                <TableCell>{`${venta._id.mes}/${venta._id.anio}`}</TableCell>
+                <TableCell>{venta.totalVentas}</TableCell>
+                <TableCell>{venta.cantidadVentas}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      {/* Sección de Ventas por Usuario */}
+      <Typography variant="h5" sx={{ mt: 4 }}>
+        Ventas por Usuario
+      </Typography>
+      <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+        <Button variant="contained" color="primary" onClick={() => downloadPDF("http://localhost:3000/api/factura/informes/ventas/usuarios/pdf")}>
+          Descargar PDF
+        </Button>
+        <Button variant="contained" color="success" onClick={() => downloadExcel("http://localhost:3000/api/factura/informes/ventas/usuarios/excel")}>
+          Descargar Excel
+        </Button>
+      </Box>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Nombre Usuario</TableCell>
+              <TableCell>Correo</TableCell>
+              <TableCell>Estado</TableCell>
+              <TableCell>Total Ventas</TableCell>
+              <TableCell>Cantidad de Ventas</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {ventasPorUsuario.map((venta, index) => (
+              <TableRow key={index}>
+                <TableCell>{venta.nombre}</TableCell>
+                <TableCell>{venta.correo}</TableCell>
+                <TableCell>{venta.estado}</TableCell>
+                <TableCell>{venta.totalVentas}</TableCell>
+                <TableCell>{venta.cantidadVentas}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      {/* Sección de Ventas por Categoría */}
+      <Typography variant="h5" sx={{ mt: 4 }}>
+        Ventas por Categoría
+      </Typography>
+      <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+        <Button variant="contained" color="primary" onClick={() => downloadPDF("http://localhost:3000/api/factura/informes/ventas/categorias/pdf")}>
+          Descargar PDF
+        </Button>
+        <Button variant="contained" color="success" onClick={() => downloadExcel("http://localhost:3000/api/factura/informes/ventas/categorias/excel")}>
+          Descargar Excel
+        </Button>
+      </Box>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Nombre Categoría</TableCell>
+              <TableCell>Total Ventas</TableCell>
+              <TableCell>Cantidad de Ventas</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {ventasPorCategoria.map((venta, index) => (
+              <TableRow key={index}>
+                <TableCell>{venta.nombre}</TableCell>
+                <TableCell>{venta.totalVentas}</TableCell>
+                <TableCell>{venta.cantidadVentas}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </Box>
   );
 }

@@ -121,80 +121,13 @@ export default function Usuarios() {
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
-      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, backgroundColor: "#ffffff", color: "#2D2D2D" }}>
-        <Toolbar>
-          <IconButton edge="start" color="inherit" onClick={toggleDrawer} sx={{ mr: 2 }}>
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            Gestión de usuarios
-          </Typography>
-          <Button variant="contained" color="primary" onClick={handleDialogOpen}>
-            + AGREGAR USUARIO
-          </Button>
-        </Toolbar>
-      </AppBar>
-
-      <Drawer
-        variant="permanent"
-        open={sidebarOpen}
-        sx={{
-          width: sidebarOpen ? 240 : 72,
-          flexShrink: 0,
-          [`& .MuiDrawer-paper`]: {
-            width: sidebarOpen ? 240 : 72,
-            boxSizing: "border-box",
-            transition: "width 0.3s",
-          },
-        }}
-      >
-        <Toolbar />
-        <Box sx={{ overflow: "auto" }}>
-          <List>
-            <ListItem button onClick={() => navigate("/dashboard-admin")}>
-              <ListItemIcon>
-                <Home />
-              </ListItemIcon>
-              {sidebarOpen && <ListItemText primary="Dashboard" />}
-            </ListItem>
-
-            <ListItem button onClick={() => navigate("/informes")}>
-              <ListItemIcon>
-                <Assignment />
-              </ListItemIcon>
-              {sidebarOpen && <ListItemText primary="Informes" />}
-            </ListItem>
-
-            <ListItem button onClick={() => navigate("/users")}>
-              <ListItemIcon>
-                <People />
-              </ListItemIcon>
-              {sidebarOpen && <ListItemText primary="Usuarios" />}
-            </ListItem>
-            <ListItem button onClick={() => navigate("/catalogAdmin")}>
-              <ListItemIcon>
-                <Inventory />
-              </ListItemIcon>
-              {sidebarOpen && <ListItemText primary="Catálogo" />}
-            </ListItem>
-            <ListItem button onClick={() => navigate("/orders")}>
-              <ListItemIcon>
-                <ShoppingCart />
-              </ListItemIcon>
-              {sidebarOpen && <ListItemText primary="Órdenes" />}
-            </ListItem>
-            <ListItem button onClick={() => navigate("/settings")}>
-              <ListItemIcon>
-                <Settings />
-              </ListItemIcon>
-              {sidebarOpen && <ListItemText primary="Configuración" />}
-            </ListItem>
-          </List>
-        </Box>
-      </Drawer>
 
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-        <Toolbar />
+        <Toolbar sx={{pt: 7, pb:4}}>
+        <Typography variant="h4" sx={{ flexGrow: 1 }}>
+          Gestión de Usuarios
+        </Typography>
+        </ Toolbar>
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
