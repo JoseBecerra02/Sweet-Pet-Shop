@@ -66,9 +66,19 @@ const sendInvoiceEmail = async (to, invoiceDetails) => {
   await transporter.sendMail(mailOptions);
 };
 
+const sendLowStockAlert = async (adminEmail, { nombre_producto, cantidad_disponible, umbral }) => {
+  const mailOptions = {
+      from: '"Sweet Pet Shop" <SweetPetSchi@gmail.com>',
+      to: adminEmail,
+      subject: 'Alerta de escasez de inventario',
+      text: `El producto "${nombre_producto}" tiene una cantidad disponible de ${cantidad_disponible}, que está por debajo del umbral establecido (${umbral}).`
+  };
+  await transporter.sendMail(mailOptions);
+};
 
 module.exports = {
   sendWelcomeEmail,
   sendSuspensionAlertEmail,
-  sendInvoiceEmail
+  sendInvoiceEmail,
+  sendLowStockAlert
 };
