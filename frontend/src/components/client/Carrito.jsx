@@ -201,7 +201,7 @@ export default function Carrito() {
     setOpenInvoice(false);
   };
 
-  // Función para crear la factura
+  // Función para crear la factura y orden 
   const handleCreateInvoice = async () => {
     try {
         const token = Cookies.get('token');

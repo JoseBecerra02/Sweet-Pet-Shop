@@ -10,7 +10,6 @@ const OrdenSchema = new mongoose.Schema({
     estado: {
         type: String,
         required: true,
-        unique: true,
         enum: ['bodega', 'reparto', 'entregado', 'pendiente', 'cancelado']
     },
     productos: [{
