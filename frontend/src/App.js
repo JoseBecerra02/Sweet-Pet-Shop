@@ -15,7 +15,7 @@ import CatalogoCliente from './components/client/CatalogoCliente';
 import Carrito from './components/client/Carrito';
 import Orders from './components/admin/Orders';
 import Informes from './components/admin/Informes';
-
+import GestionSolicitudes from './components/admin/GestionSolicitudes';
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -154,6 +154,8 @@ const ContentBox = styled(Box)({
           <Route path="/Users" element={isLoggedIn && userRole === 'admin' ? <Users /> : <Navigate to="/" />} />
           <Route path="/orders" element={isLoggedIn && userRole === 'admin' ? <Orders /> : <Navigate to="/" />} />
           <Route path="/informes" element={isLoggedIn && userRole === 'admin' ? <Informes /> : <Navigate to="/" />} />
+          <Route path="/solicitudes" element={isLoggedIn && userRole === 'admin' ? <GestionSolicitudes /> : <Navigate to="/" />} />
+
 
           {/* Rutas para Cliente */}
           <Route path="/clienteapp" element={isLoggedIn && userRole === 'cliente' ? <ClienteDashboard /> : <Navigate to="/" />} />

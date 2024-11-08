@@ -283,7 +283,7 @@ export default function Catalogo() {
       {/* Main Content - Tabla de Productos */}
         <Box component="main" sx={{ flexGrow: 1, p: 3, pt: 9 }}>
         <Toolbar sx={{marginBottom:'20px'}}>
-            <Typography variant="h4" sx={{ flexGrow: 1 }}>
+            <Typography variant="h4" sx={{ flexGrow: 1,  fontWeight: 'bold'}}>
               Catálogo de Productos
             </Typography>
             <Button variant="contained" color="primary" onClick={handleUmbralDialogOpen}>
