@@ -1,16 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const sendMail = require('../utils/mailer');
 const Inventory = require('../models/Inventario');
+const transporter = require('../config/mailer');
 
+// Función para enviar correo de bienvenida
 router.post('/send-email', async (req, res) => {
-    const { to, subject, text } = req.body;
-    // console.log('Datos del correo:', req.body);
+    const { to } = req.body;
+
     const lowStockItems = await Inventory.find({ $expr: { $lt: ["$cantidad", "$umbral"] } });
-    // console.log('Items con bajo stock:', lowStockItems);
     const lowStockText = "Los siguientes items se encuentran bajo el umbral " + lowStockItems.map(item => `ID: ${item._id}, Nombre: ${item.nombre_producto}, Cantidad: ${item.cantidad}`).join('\n');
-    // console.log(lowStockText);
-    // return res.status(200).json(lowStockText);
     // Crear el HTML de la tabla
     let tablaHTML = `
         <table style="border-collapse: collapse; width: 100%; margin-top: 20px;">
@@ -30,39 +28,35 @@ router.post('/send-email', async (req, res) => {
                 <td style="padding: 8px; border: 1px solid #ddd;">${producto.nombre_producto}</td>
                 <td style="padding: 8px; border: 1px solid #ddd;">${producto.cantidad}</td>
             </tr>`;
-                });
+    });
 
     tablaHTML += `
         </tbody>
         </table>`;
-
-
     const mailOptions = {
+        from: '"Sweet Pet Shop" <SweetPetSchi@gmail.com>',
         to: to,
-        subject: "Alerta de inventario bajo ",
-        text: lowStockText,
+        subject: "Bienvenido a SweetPet Shop",
         html: `
-        <html>
-          <body>
-            <h1>Informe de Productos</h1>
-            <p>Hola,</p>
-            <p>A continuación se muestra una tabla con los productos con stock bajo:</p>
-            ${tablaHTML}
-            <footer>
-              <p>Saludos,</p>
-              <p><strong>SweetPet</strong></p>
-            </footer>
-          </body>
-        </html>
-      `, 
+            <html>
+              <body>
+                <h1>Informe de Productos</h1>
+                <p>Hola,</p>
+                <p>A continuación se muestra una tabla con los productos con stock bajo:</p>
+                ${tablaHTML}
+                <footer>
+                  <p>Saludos,</p>
+                  <p><strong>SweetPet</strong></p>
+                </footer>
+              </body>
+            </html>
+          `, 
     };
+    await transporter.sendMail(mailOptions);
 
-    try {
-        const result = await sendMail(mailOptions);
-        res.status(200).json({ message: 'Correo enviado exitosamente', result });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+    return res.status(200).json({ message: 'Email enviado' });
+
+
 });
 
 module.exports = router;
