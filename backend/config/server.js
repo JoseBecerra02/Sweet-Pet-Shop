@@ -9,6 +9,8 @@ const inventarioRoutes = require('../routes/inventarioRoutes'); // Nueva ruta
 const categoriaRoutes = require('../routes/categoriaRoutes'); // Asegúrate de tener esta línea
 const usuarioRoutes = require('../routes/usuarioRoutes');
 const carritoRoutes = require('../routes/carritoRoutes');
+const bodyParser = require('body-parser');
+const emailRoutes = require('../routes/mailerRoutes');
 
 const app = express();
 
@@ -40,6 +42,9 @@ app.use('/api/categoria', categoriaRoutes);
 app.use('/api/carrito', carritoRoutes);
 app.use('/api/factura', facturaRoutes); 
 app.use('/api/orden', ordenRoutes); 
+
+app.use(bodyParser.json());
+app.use('/api', emailRoutes);
 
 // Manejo de errores global
 app.use((err, req, res, next) => {
