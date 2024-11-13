@@ -20,10 +20,19 @@ import Carrito from './Carrito';
 import ProductoDetalle from './ProductoDetalle';
 import HistorialPedidos from './HistorialPedidos';
 import Perfil from './Perfil'; 
+import BannersCliente from './Banner';
 
 export default function ClienteDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedSection, setSelectedSection] = useState('catalogo');
+
+    // Colores personalizados
+    const colors = {
+      primary: "#CA6DF2",
+      secondary: "#B86AD9",
+      textDark: "#2D2D2D",
+      textLight: "#FFFFFF",
+    };
 
   const toggleDrawer = () => {
     setSidebarOpen(!sidebarOpen);
@@ -35,6 +44,13 @@ export default function ClienteDashboard() {
     Cookies.remove('rol'); 
     window.location.href = '/'; 
   };
+
+  
+  const banners = [
+    { title: "Promoción Especial", content: "¡Aprovecha hasta 50% de descuento en productos seleccionados!" },
+    { title: "Nuevo Producto", content: "Descubre nuestro nuevo producto para el cuidado de mascotas." },
+    // Dummy banners
+  ];
 
   const renderSelectedSection = () => {
     switch (selectedSection) {
@@ -125,6 +141,7 @@ export default function ClienteDashboard() {
 
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
         <Toolbar />
+        <BannersCliente banners={banners} colors={colors} />
         {renderSelectedSection()}
       </Box>
     </Box>
