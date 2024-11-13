@@ -80,7 +80,7 @@ export default function AdminDashboard() {
     // Obtener los datos de ventas mensuales
     const fetchSalesData = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/api/facturas/informes/ventas/mensual"); // Ruta del backend para ventas mensuales
+        const response = await axios.get("http://localhost:3000/api/factura/informes/ventas/mensual"); // Ruta del backend para ventas mensuales
         const formattedData = response.data.map((item) => ({
           name: `${item._id.mes}/${item._id.anio}`,
           sales: item.totalVentas,
