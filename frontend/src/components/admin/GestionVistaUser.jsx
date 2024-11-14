@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import {
   Box,
   Toolbar,
@@ -27,10 +27,7 @@ export default function VistaUser() {
     textLight: "#FFFFFF",
   };
 
-  const [banners, setBanners] = useState([
-    { id: 1, title: "Banner 1", description: "Descripción del Banner 1" },
-    { id: 2, title: "Banner 2", description: "Descripción del Banner 2" },
-  ]);
+  const [banners, setBanners] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [currentBanner, setCurrentBanner] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -40,30 +37,73 @@ export default function VistaUser() {
     setIsEditing(Boolean(banner));
     setOpenDialog(true);
   };
+  const fetchBanners = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/api/banner');
+      const data = await response.json();
+      setBanners(data);
+      console.log('Banners:', data);
+    } catch (error) {
+      console.error('Error fetching banners:', error);
+    }
+  };
+  useEffect(() => {
+    fetchBanners();
+  }, []);
 
   const handleCloseDialog = () => {
     setCurrentBanner(null);
     setOpenDialog(false);
   };
 
-  const handleSaveBanner = () => {
+  const handleSaveBanner = async (banner) => {
+    
     if (isEditing) {
-      setBanners((prevBanners) =>
-        prevBanners.map((b) =>
-          b.id === currentBanner.id ? currentBanner : b
-        )
-      );
+      try {
+        const response = await fetch(`http://localhost:3000/api/banner/${currentBanner.id_banner}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(currentBanner),
+        });
+        if (response.ok) {
+          fetchBanners(); // Actualizar la lista de banners
+        }
+      } catch (error) {
+        console.error('Error updating banner:', error);
+      }
     } else {
-      setBanners((prevBanners) => [
-        ...prevBanners,
-        { ...currentBanner, id: Date.now() },
-      ]);
+      try {
+        const response = await fetch('http://localhost:3000/api/banner', {
+          method: 'POST',
+          headers: {
+        'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(currentBanner),
+        });
+        const newBanner = await response.json();
+        setBanners((prevBanners) => [...prevBanners, newBanner]);
+      } catch (error) {
+        console.error('Error saving banner:', error);
+      }
     }
     handleCloseDialog();
   };
 
-  const handleDeleteBanner = (id) => {
-    setBanners((prevBanners) => prevBanners.filter((b) => b.id !== id));
+  const handleDeleteBanner = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:3000/api/banner/${id}`, {
+        method: 'DELETE',
+      });
+      if (response.ok) {
+        setBanners((prevBanners) => prevBanners.filter((banner) => banner.id_banner !== id));
+      } else {
+        console.error('Error deleting banner:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error deleting banner:', error);
+    }
   };
 
   return (
@@ -84,15 +124,15 @@ export default function VistaUser() {
       <Divider sx={{ marginY: 3 }} />
       <List>
         {banners.map((banner) => (
-          <ListItem key={banner.id}>
+          <ListItem key={banner.id_banner}>
             <ListItemText
-              primary={banner.title}
-              secondary={banner.description}
+              primary={banner.titulo}
+              secondary={banner.descripcion}
             />
             <IconButton onClick={() => handleOpenDialog(banner)}>
               <Edit />
             </IconButton>
-            <IconButton onClick={() => handleDeleteBanner(banner.id)} color="error">
+            <IconButton onClick={() => handleDeleteBanner(banner.id_banner)} color="error">
               <Delete />
             </IconButton>
           </ListItem>
@@ -106,9 +146,9 @@ export default function VistaUser() {
             label="Título"
             fullWidth
             margin="dense"
-            value={currentBanner?.title || ""}
+            value={currentBanner?.titulo || ""}
             onChange={(e) =>
-              setCurrentBanner({ ...currentBanner, title: e.target.value })
+              setCurrentBanner({ ...currentBanner, titulo: e.target.value })
             }
           />
           <TextField
@@ -117,9 +157,9 @@ export default function VistaUser() {
             margin="dense"
             multiline
             rows={3}
-            value={currentBanner?.description || ""}
+            value={currentBanner?.descripcion || ""}
             onChange={(e) =>
-              setCurrentBanner({ ...currentBanner, description: e.target.value })
+              setCurrentBanner({ ...currentBanner, descripcion: e.target.value })
             }
           />
         </DialogContent>
