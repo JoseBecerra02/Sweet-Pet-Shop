@@ -29,12 +29,35 @@ import {
   Select,
   MenuItem,
 } from "@mui/material";
-import { Menu as MenuIcon, Home, People, Inventory, ShoppingCart, Settings, Edit, Delete, Save } from "@mui/icons-material";
+import { Menu as MenuIcon, Home, People, Inventory, ShoppingCart, Settings, Edit, Delete, Save, Assignment } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+// Importar los módulos necesarios de Firebase
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+
+// Configuración de Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyAOu2d20BqFbe2Ilm7lTlvn953tL6GM8GE",
+  authDomain: "sweetpetshop-5477f.firebaseapp.com",
+  projectId: "sweetpetshop-5477f",
+  storageBucket: "sweetpetshop-5477f.appspot.com",
+  messagingSenderId: "559380812966",
+  appId: "1:559380812966:web:621c71ccedb15297451067",
+  measurementId: "G-4ECC4H19CV"
+};
+
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+const storage = getStorage(app);
+
 
 export default function Catalogo() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [umbralDialogOpen, setUmbralDialogOpen] = useState(false);
+  const [umbralMinimo, setUmbralMinimo] = useState(0);
+  const [umbral, setUmbral] = useState(null);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [products, setProducts] = useState([]);
   const [newProduct, setNewProduct] = useState({
@@ -85,6 +108,14 @@ export default function Catalogo() {
     setDialogOpen(false);
   };
 
+  const handleUmbralDialogOpen = () => {
+    setUmbralDialogOpen(true);
+  };
+
+  const handleUmbralDialogClose = () => {
+    setUmbralDialogOpen(false);
+  };
+
   const handleCategoryDialogOpen = () => {
     setCategoryDialogOpen(true);
   };
@@ -100,37 +131,54 @@ export default function Catalogo() {
     setNewProduct({ ...newProduct, [name]: value });
   };
 
-  const handleAddProduct = () => {
-    if (!newProduct.categoria) {
-      console.error('No se ha seleccionado una categoría');
-      return;
-    }
-    console.log('Agregando producto:', newProduct);
-
-    axios.post('http://localhost:3000/api/inventario', newProduct)
-      .then(response => {
-        setProducts([...products, response.data]); 
-        handleDialogClose();
-        setNewProduct({
-          nombre_producto: "",
-          precio: "",
-          cantidad: "",
-          descripcion: "",
-          categoria: "",
-          ruta: "",
-        });
+  const handleSaveUmbral = () => {
+    const valor = umbralMinimo; 
+    
+    axios.put(`http://localhost:3000/api/inventario/umbral/${valor}`)
+      .then((response) => {
+        console.log('Umbrales actualizados correctamente:', response.data);
+        setUmbral(valor); 
+        setUmbralMinimo(''); 
       })
-      .catch(error => {
-        if (error.response) {
-          console.error('Error al agregar producto:', error.response.data);
-        } else if (error.request) {
-          console.error('Error al agregar producto: No se recibió respuesta del servidor', error.request);
-        } else {
-          console.error('Error al agregar producto:', error.message);
-        }
+      .catch((error) => {
+        console.error('Error al establecer umbral:', error);
       });
   };
 
+  const handleAddProduct = async () => {
+      if (!newProduct.categoria || !newProduct.imagen) {
+        console.error('No se ha seleccionado una categoría o imagen');
+        return;
+      }
+
+      // Subir la imagen a Firebase Storage
+      const fileRef = ref(storage, `images/${newProduct.imagen.name}`);
+      await uploadBytes(fileRef, newProduct.imagen);
+
+      // Obtener la URL de la imagen subida
+      const imageUrl = await getDownloadURL(fileRef);
+
+      // Ahora puedes guardar el producto en MongoDB con la URL de la imagen
+      const productoConImagen = { ...newProduct, ruta: imageUrl };
+
+      axios.post('http://localhost:3000/api/inventario', productoConImagen)
+        .then(response => {
+          setProducts([...products, response.data]);
+          handleDialogClose();
+          setNewProduct({
+            nombre_producto: "",
+            precio: "",
+            cantidad: "",
+            descripcion: "",
+            categoria: "",
+            ruta: "",
+          });
+        })
+        .catch(error => {
+          console.error('Error al agregar producto:', error.message);
+        });
+    };
+    
   const handleAddCategory = () => {
     const categoryToSend = { nombre: newCategory }; 
     
@@ -228,77 +276,26 @@ export default function Catalogo() {
 
   return (
     <Box sx={{ display: "flex" }}>
-      <CssBaseline />
-      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, backgroundColor: "#ffffff", color: "#2D2D2D" }}>
-        <Toolbar>
-          <IconButton edge="start" color="inherit" onClick={toggleDrawer} sx={{ mr: 2 }}>
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            Catálogo de Productos
-          </Typography>
-          <Button variant="contained" color="primary" onClick={handleDialogOpen}>
-            + AGREGAR PRODUCTO
-          </Button>
-          <Button variant="contained" color="secondary" onClick={handleCategoryDialogOpen} sx={{ ml: 2 }}>
-            + AGREGAR CATEGORÍA
-          </Button>
-        </Toolbar>
-      </AppBar>
+      {/* <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, backgroundColor: "#ffffff", color: "#2D2D2D" }}> */}
 
-      <Drawer
-        variant="permanent"
-        open={sidebarOpen}
-        sx={{
-          width: sidebarOpen ? 240 : 72,
-          flexShrink: 0,
-          [`& .MuiDrawer-paper`]: {
-            width: sidebarOpen ? 240 : 72,
-            boxSizing: "border-box",
-            transition: "width 0.3s",
-          },
-        }}
-      >
-        <Toolbar />
-        <Box sx={{ overflow: "auto" }}>
-          <List>
-            <ListItem button onClick={() => navigate("/dashboard-admin")}>
-              <ListItemIcon>
-                <Home />
-              </ListItemIcon>
-              {sidebarOpen && <ListItemText primary="Dashboard" />}
-            </ListItem>
-            <ListItem button onClick={() => navigate("/users")}>
-              <ListItemIcon>
-                <People />
-              </ListItemIcon>
-              {sidebarOpen && <ListItemText primary="Usuarios" />}
-            </ListItem>
-            <ListItem button onClick={() => navigate("/catalog")}>
-              <ListItemIcon>
-                <Inventory />
-              </ListItemIcon>
-              {sidebarOpen && <ListItemText primary="Catálogo" />}
-            </ListItem>
-            <ListItem button onClick={() => navigate("/orders")}>
-              <ListItemIcon>
-                <ShoppingCart />
-              </ListItemIcon>
-              {sidebarOpen && <ListItemText primary="Órdenes" />}
-            </ListItem>
-            <ListItem button onClick={() => navigate("/settings")}>
-              <ListItemIcon>
-                <Settings />
-              </ListItemIcon>
-              {sidebarOpen && <ListItemText primary="Configuración" />}
-            </ListItem>
-          </List>
-        </Box>
-      </Drawer>
+      {/* </AppBar> */}
 
       {/* Main Content - Tabla de Productos */}
-      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-        <Toolbar />
+        <Box component="main" sx={{ flexGrow: 1, p: 3, pt: 9 }}>
+        <Toolbar sx={{marginBottom:'20px'}}>
+            <Typography variant="h4" sx={{ flexGrow: 1 }}>
+              Catálogo de Productos
+            </Typography>
+            <Button variant="contained" color="primary" onClick={handleUmbralDialogOpen}>
+              ✎ UMBRAL MÍNIMO
+            </Button>
+            <Button variant="contained" color="primary" onClick={handleDialogOpen} sx={{ ml: 2 }} >
+              + AGREGAR PRODUCTO
+            </Button>
+            <Button variant="contained" color="secondary" onClick={handleCategoryDialogOpen} sx={{ ml: 2 }}>
+              + AGREGAR CATEGORÍA
+            </Button>
+          </Toolbar>
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
@@ -446,15 +443,12 @@ export default function Catalogo() {
                 </MenuItem>
               ))}
             </Select>
-            <TextField
-              margin="dense"
-              name="ruta"
-              label="URL de la Imagen"
-              fullWidth
-              variant="outlined"
-              value={newProduct.ruta}
-              onChange={handleInputChange}
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setNewProduct({ ...newProduct, imagen: e.target.files[0] })}
             />
+
           </DialogContent>
           <DialogActions>
             <Button onClick={handleDialogClose} color="primary">
@@ -530,6 +524,28 @@ export default function Catalogo() {
             <Button onClick={editCategoryId ? handleSaveClick : handleAddCategory} color="primary">
               {editCategoryId ? "Guardar" : "Agregar"}
             </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Dialog para editar umbral mínimo de stock */}
+        <Dialog open={umbralDialogOpen} onClose={handleUmbralDialogClose}>
+          <DialogTitle>Establecer Umbral Mínimo de Stock</DialogTitle>
+          <DialogContent>
+            <DialogContentText>Establezca el umbral mínimo de stock para los productos.</DialogContentText>
+            <TextField
+              autoFocus
+              margin="dense"
+              label="Umbral Mínimo"
+              type="number"
+              fullWidth
+              variant="outlined"
+              value={umbralMinimo}
+              onChange={(e) => setUmbralMinimo(e.target.value)}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleUmbralDialogClose}>Cancelar</Button>
+            <Button onClick={handleSaveUmbral} color="primary">Guardar</Button>
           </DialogActions>
         </Dialog>
       </Box>

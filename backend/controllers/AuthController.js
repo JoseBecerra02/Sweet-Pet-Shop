@@ -3,7 +3,7 @@
 const { OAuth2Client } = require('google-auth-library');
 const jwt = require('jsonwebtoken');
 const Usuario = require('../models/Usuario');
-const transporter = require('../config/mailer');
+const { sendWelcomeEmail } = require('../controllers/MailController');
 
 const client = new OAuth2Client(process.env.GOOGLE_OAUTH_CLIENT_ID);
 
@@ -44,13 +44,7 @@ const googleLoginBackend = async (req, res) => {
       });
       await user.save();
 
-      // Enviar correo de bienvenida
-      await transporter.sendMail({
-        from: '"Welcome SweetPet Shop 🐶" <SweetPetSchi@gmail.com>', // Dirección del remitente
-        to: user.correo, // Dirección del destinatario (desde la base de datos)
-        subject: "Welcome SweetPet Shop", // Asunto del correo
-        html: "<b>¡Hola, bienvenido a SweetPet Shop!</b><p>Estamos encantados de que te hayas unido a nuestra comunidad.</p>", // Contenido HTML
-      });
+      await sendWelcomeEmail(user.correo, user.nombre);
 
     }
 

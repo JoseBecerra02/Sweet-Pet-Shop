@@ -26,14 +26,36 @@ import {
   DialogContentText,
   DialogTitle,
   TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
-import { Menu as MenuIcon, Home, People, Inventory, ShoppingCart, Settings, Edit, Delete, Save } from "@mui/icons-material";
+import { Menu as MenuIcon, Home, People, Inventory, ShoppingCart, Settings, Edit, Delete, Save, Assignment } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import { styled } from "@mui/system";
+
+// Estilos personalizados para la tabla
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+  fontWeight: 'bold',
+  color: '#2D2D2D',
+  borderBottom: '1px solid #E0E0E0',
+}));
+
+const StyledTableRow = styled(TableRow)(({ theme }) => ({
+  '&:nth-of-type(odd)': {
+    backgroundColor: '#F3E5F5', // Lila pastel
+  },
+  '&:hover': {
+    backgroundColor: '#EDE7F6', // Un tono más claro para el hover
+  },
+}));
 
 export default function Usuarios() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [users, setUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
   const [newUser, setNewUser] = useState({
     correo: "",
     nombre: "",
@@ -43,11 +65,14 @@ export default function Usuarios() {
   });
   const [editUserId, setEditUserId] = useState(null);
   const [editUserData, setEditUserData] = useState({});
+  const [filterStatus, setFilterStatus] = useState("todos");
+  const [filterRole, setFilterRole] = useState("todos");
 
   useEffect(() => {
     axios.get('http://localhost:3000/api/usuarios/usuarios')
       .then(response => {
         setUsers(response.data);
+        setFilteredUsers(response.data);
       })
       .catch(error => {
         console.error('Error al obtener usuarios:', error);
@@ -77,6 +102,7 @@ export default function Usuarios() {
     axios.post('http://localhost:3000/api/usuarios/crear-usuario', newUser)
       .then(response => {
         setUsers([...users, response.data]); 
+        setFilteredUsers([...users, response.data]);
         handleDialogClose();
         setNewUser({
           correo: "",
@@ -94,7 +120,9 @@ export default function Usuarios() {
   const handleDeleteUser = (userId) => {
     axios.delete(`http://localhost:3000/api/usuarios/usuarios/${userId}`)
       .then(() => {
-        setUsers(users.filter(user => user._id !== userId));
+        const updatedUsers = users.filter(user => user._id !== userId);
+        setUsers(updatedUsers);
+        setFilteredUsers(updatedUsers);
       })
       .catch(error => console.error("Error al eliminar usuario:", error));
   };
@@ -111,6 +139,7 @@ export default function Usuarios() {
           user._id === userId ? { ...user, ...editUserData } : user
         );
         setUsers(updatedUsers);
+        setFilteredUsers(updatedUsers);
         setEditUserId(null); 
       })
       .catch((error) => {
@@ -118,62 +147,82 @@ export default function Usuarios() {
       });
   };
 
+  const handleFilterChange = (e) => {
+    const status = e.target.value;
+    setFilterStatus(status);
+    applyFilters(status, filterRole);
+  };
+
+  const handleRoleFilterChange = (e) => {
+    const role = e.target.value;
+    setFilterRole(role);
+    applyFilters(filterStatus, role);
+  };
+
+  const applyFilters = (status, role) => {
+    let filtered = users;
+    if (status !== "todos") {
+      filtered = filtered.filter(user => user.estado === status);
+    }
+    if (role !== "todos") {
+      filtered = filtered.filter(user => user.rol === role);
+    }
+    setFilteredUsers(filtered);
+  };
+
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
-      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, backgroundColor: "#ffffff", color: "#2D2D2D" }}>
-        <Toolbar>
-          <IconButton edge="start" color="inherit" onClick={toggleDrawer} sx={{ mr: 2 }}>
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            Gestión de usuarios
-          </Typography>
-          <Button variant="contained" color="primary" onClick={handleDialogOpen}>
-            + AGREGAR USUARIO
-          </Button>
-        </Toolbar>
-      </AppBar>
-
-      <Drawer
-        variant="permanent"
-        open={sidebarOpen}
-        sx={{
-          width: sidebarOpen ? 240 : 72,
-          flexShrink: 0,
-          [`& .MuiDrawer-paper`]: {
-            width: sidebarOpen ? 240 : 72,
-            boxSizing: "border-box",
-            transition: "width 0.3s",
-          },
-        }}
-      >
-        <Toolbar />
-        <Box sx={{ overflow: "auto" }}>
-          <List>
-            {/* Opciones de navegación aquí */}
-          </List>
-        </Box>
-      </Drawer>
 
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-        <Toolbar />
+        <Toolbar sx={{ pt: 7, pb: 4 }}>
+          <Typography variant="h4" sx={{ flexGrow: 1 }}>
+            Gestión de Usuarios
+          </Typography>
+          <FormControl sx={{ minWidth: 150, mr: 2 }}>
+            <InputLabel id="filter-status-label">Filtrar por Estado</InputLabel>
+            <Select
+              labelId="filter-status-label"
+              value={filterStatus}
+              label="Filtrar por Estado"
+              onChange={handleFilterChange}
+            >
+              <MenuItem value="todos">Todos</MenuItem>
+              <MenuItem value="activo">Activo</MenuItem>
+              <MenuItem value="inactivo">Inactivo</MenuItem>
+              <MenuItem value="suspendido">Suspendido</MenuItem>
+            </Select>
+          </FormControl>
+          <FormControl sx={{ minWidth: 150 }}>
+            <InputLabel id="filter-role-label">Filtrar por Rol</InputLabel>
+            <Select
+              labelId="filter-role-label"
+              value={filterRole}
+              label="Filtrar por Rol"
+              onChange={handleRoleFilterChange}
+            >
+              <MenuItem value="todos">Todos</MenuItem>
+              <MenuItem value="cliente">Cliente</MenuItem>
+              <MenuItem value="admin">Admin</MenuItem>
+            </Select>
+          </FormControl>
+        </Toolbar>
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Correo</TableCell>
-                <TableCell>Nombre</TableCell>
-                <TableCell>Rol</TableCell>
-                <TableCell>Estado</TableCell>
-                <TableCell>Teléfono</TableCell>
-                <TableCell>Acciones</TableCell>
+                <StyledTableCell>Correo</StyledTableCell>
+                <StyledTableCell>Nombre</StyledTableCell>
+                <StyledTableCell>Rol</StyledTableCell>
+                <StyledTableCell>Estado</StyledTableCell>
+                <StyledTableCell>Teléfono</StyledTableCell>
+                <StyledTableCell>Acciones</StyledTableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {users.map((user) => (
-                <TableRow key={user._id}>
-                  <TableCell>
+              {filteredUsers.map((user) => (
+                <StyledTableRow key={user._id}>
+                  <StyledTableCell>
                     {editUserId === user._id ? (
                       <TextField
                         name="correo"
@@ -188,8 +237,8 @@ export default function Usuarios() {
                     ) : (
                       user.correo
                     )}
-                  </TableCell>
-                  <TableCell>
+                  </StyledTableCell>
+                  <StyledTableCell>
                     {editUserId === user._id ? (
                       <TextField
                         name="nombre"
@@ -204,8 +253,8 @@ export default function Usuarios() {
                     ) : (
                       user.nombre
                     )}
-                  </TableCell>
-                  <TableCell>
+                  </StyledTableCell>
+                  <StyledTableCell>
                     {editUserId === user._id ? (
                       <TextField
                         name="rol"
@@ -220,8 +269,8 @@ export default function Usuarios() {
                     ) : (
                       user.rol
                     )}
-                  </TableCell>
-                  <TableCell>
+                  </StyledTableCell>
+                  <StyledTableCell>
                     {editUserId === user._id ? (
                       <TextField
                         name="estado"
@@ -236,8 +285,8 @@ export default function Usuarios() {
                     ) : (
                       user.estado
                     )}
-                  </TableCell>
-                  <TableCell>
+                  </StyledTableCell>
+                  <StyledTableCell>
                     {editUserId === user._id ? (
                       <TextField
                         name="telefono"
@@ -252,8 +301,8 @@ export default function Usuarios() {
                     ) : (
                       user.telefono
                     )}
-                  </TableCell>
-                  <TableCell>
+                  </StyledTableCell>
+                  <StyledTableCell>
                     {editUserId === user._id ? (
                       <IconButton color="primary" onClick={() => handleUserSaveClick(user._id)}>
                         <Save />
@@ -268,8 +317,8 @@ export default function Usuarios() {
                         </IconButton>
                       </>
                     )}
-                  </TableCell>
-                </TableRow>
+                  </StyledTableCell>
+                </StyledTableRow>
               ))}
             </TableBody>
           </Table>

@@ -11,6 +11,10 @@ import Users from './components/admin/Users';
 import ClienteDashboard from './components/client/ClienteDashboard';
 import { Typography, Box, Snackbar, Alert } from '@mui/material';
 import { styled } from '@mui/system';
+import CatalogoCliente from './components/client/CatalogoCliente';
+import Carrito from './components/client/Carrito';
+import Orders from './components/admin/Orders';
+import Informes from './components/admin/Informes';
 
 
 const App = () => {
@@ -20,7 +24,7 @@ const App = () => {
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
-
+  
   useEffect(() => {
     const token = Cookies.get('token');
     const role = Cookies.get('rol'); 
@@ -148,9 +152,13 @@ const ContentBox = styled(Box)({
           <Route path="/dashboard-admin" element={isLoggedIn && userRole === 'admin' ? <AdminDashboard /> : <Navigate to="/" />} />
           <Route path="/catalogAdmin" element={isLoggedIn && userRole === 'admin' ? <Catalogo /> : <Navigate to="/" />} />
           <Route path="/Users" element={isLoggedIn && userRole === 'admin' ? <Users /> : <Navigate to="/" />} />
+          <Route path="/orders" element={isLoggedIn && userRole === 'admin' ? <Orders /> : <Navigate to="/" />} />
+          <Route path="/informes" element={isLoggedIn && userRole === 'admin' ? <Informes /> : <Navigate to="/" />} />
 
           {/* Rutas para Cliente */}
           <Route path="/clienteapp" element={isLoggedIn && userRole === 'cliente' ? <ClienteDashboard /> : <Navigate to="/" />} />
+          <Route path="/catalogo-cliente" element={<CatalogoCliente />} />
+          <Route path="/carrito" element={<Carrito />} />
 
           {/* Redirección a Home si se accede a una ruta no válida */}
           <Route path="*" element={<Navigate to="/" />} />

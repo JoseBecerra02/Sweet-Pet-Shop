@@ -22,16 +22,16 @@ const InventarioSchema = new mongoose.Schema({
     ruta: {
         type: String,
         required: true,
-        validate: {
-            validator: function (v) {
-                return /^(https:\/\/drive\.google\.com\/.+)/.test(v); // Valida que sea un enlace a Google Drive
-            },
-            message: props => `${props.value} no es una URL válida de Google Drive!`
-        }
     },
     descripcion: {
         type: String,
         maxlength: [500, 'La descripción no puede exceder los 500 caracteres'],
+    },
+    umbral: {
+        type: Number,
+        required: true,
+        default: 25,
+        min: [0, 'La cantidad no puede ser negativa'],
     }
 }, { timestamps: true }); // Timestamps para createdAt y updatedAt
 
