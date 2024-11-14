@@ -39,6 +39,13 @@ export default function CatalogoCliente() {
   const [user, setUser] = useState({});
   const [searchQuery, setSearchQuery] = useState('');
 
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+  const [inStock, setInStock] = useState(false);
+  const [onSale, setOnSale] = useState(false);
+
+  const [sortOrder, setSortOrder] = useState('asc');
+
   useEffect(() => {
     axios.get('http://localhost:3000/api/categoria')
       .then(response => {
@@ -61,7 +68,9 @@ export default function CatalogoCliente() {
             const category = categories.find(cat => cat._id === (product.categoria.$oid || product.categoria));
             return {
               ...product,
-              categoriaNombre: category ? category.nombre : 'Sin Categoría'
+              categoriaNombre: category ? category.nombre : 'Sin Categoría',
+              cantidad: product.cantidad || 0, // NUEVO CAMPO
+              enPromocion: product.enPromocion || false // NUEVO CAMPO
             };
           });
           setProducts(productsWithCategoryNames);
@@ -72,6 +81,10 @@ export default function CatalogoCliente() {
         });
     }
   }, [categories]);
+
+  useEffect(() => {
+    filterProducts(searchQuery, selectedCategories);
+  }, [minPrice, maxPrice, inStock, onSale, sortOrder]); // NUEVA DEPENDENCIA
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -191,8 +204,32 @@ export default function CatalogoCliente() {
         product.categoriaNombre.toLowerCase().includes(query.toLowerCase())
       );
     }
-  
-    setFilteredProducts(filtered);
+   // Filtrar por rango de precios
+   if (minPrice !== '') {
+    filtered = filtered.filter(product => product.precio >= parseFloat(minPrice));
+  }
+  if (maxPrice !== '') {
+    filtered = filtered.filter(product => product.precio <= parseFloat(maxPrice));
+  }
+
+  // Filtrar por disponibilidad (en stock)
+  if (inStock) {
+    filtered = filtered.filter(product => product.cantidad > 0);
+  }
+
+  // Filtrar por promociones
+  if (onSale) {
+    filtered = filtered.filter(product => product.enPromocion === true); // Asegúrate de que tu backend devuelva `enPromocion`
+  }
+
+  // Ordenar productos por precio
+  if (sortOrder === 'asc') {
+    filtered.sort((a, b) => a.precio - b.precio);
+  } else {
+    filtered.sort((a, b) => b.precio - a.precio);
+  }
+
+  setFilteredProducts(filtered);
   };
   
 
@@ -201,8 +238,118 @@ export default function CatalogoCliente() {
       <Typography variant="h4" gutterBottom sx={{ color: '#CA6DF2', textAlign: 'center', marginBottom: '40px', fontWeight: 'bold' }}>
         Catálogo de Productos
       </Typography>
+  <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', marginBottom: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
       <Box sx={{ display: 'flex', gap: 2 }}>
+      <Box sx={{ padding: 3, marginTop: -3, backgroundColor: 'white' }}></Box>
+      <TextField
+    type="number"
+    variant="outlined"
+    placeholder="Precio mínimo"
+    value={minPrice}
+    onChange={(e) => setMinPrice(e.target.value)}
+    sx={{
+      width: '150px',
+      textTransform: 'none',
+      '& .MuiOutlinedInput-root': {
+        borderColor: '#B86AD9',
+        borderRadius: '8px',
+        backgroundColor: 'transparent',
+        color: '#2D2D2D',
+        '& fieldset': {
+          borderColor: minPrice ? '#CA6DF2' : '#B86AD9',
+        },
+        '&:hover fieldset': {
+          borderColor: '#CA6DF2',
+        },
+        '&.Mui-focused fieldset': {
+          borderColor: '#A55BC0',
+        },
+      },
+      '& .MuiInputBase-input': {
+        padding: '10px 14px',
+        color: minPrice ? '#F2F2F2' : '#2D2D2D',
+        backgroundColor: minPrice ? '#B86AD9' : 'transparent',
+        borderRadius: '4px',
+      },
+    }}
+  />
+  <TextField
+    type="number"
+    variant="outlined"
+    placeholder="Precio máximo"
+    value={maxPrice}
+    onChange={(e) => setMaxPrice(e.target.value)}
+    sx={{
+      width: '150px',
+      textTransform: 'none',
+      '& .MuiOutlinedInput-root': {
+        borderColor: '#B86AD9',
+        borderRadius: '8px',
+        backgroundColor: 'transparent',
+        color: '#2D2D2D',
+        '& fieldset': {
+          borderColor: minPrice ? '#CA6DF2' : '#B86AD9',
+        },
+        '&:hover fieldset': {
+          borderColor: '#CA6DF2',
+        },
+        '&.Mui-focused fieldset': {
+          borderColor: '#A55BC0',
+        },
+      },
+      '& .MuiInputBase-input': {
+        padding: '10px 14px',
+        color: minPrice ? '#F2F2F2' : '#2D2D2D',
+        backgroundColor: minPrice ? '#B86AD9' : 'transparent',
+        borderRadius: '4px',
+      },
+    }}
+  />
+  <Button
+  variant="outlined"
+  onClick={() => {
+    const newOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+    setSortOrder(newOrder);
+    filterProducts(searchQuery, selectedCategories);
+  }}
+  sx={{
+    textTransform: 'none',
+    borderColor: '#CA6DF2',
+    color: '#2D2D2D',
+    '&:hover': {
+      backgroundColor: '#A55BC0',
+      color: '#F2F2F2'
+    }
+  }}
+>
+  Ordenar por precio: {sortOrder === 'asc' ? 'Ascendente' : 'Descendente'}
+</Button>
+  <Button
+    variant={inStock ? 'contained' : 'outlined'}
+    onClick={() => setInStock(!inStock)}
+    sx={{
+      textTransform: 'none',
+      borderColor: inStock ? '#CA6DF2' : '#B86AD9',
+      backgroundColor: inStock ? '#B86AD9' : 'transparent',
+      color: inStock ? '#F2F2F2' : '#2D2D2D',
+    }}
+  >
+    {inStock ? 'En Stock' : 'En Stock'}
+  </Button>
+  <Button
+    variant={onSale ? 'contained' : 'outlined'}
+    onClick={() => setOnSale(!onSale)}
+    sx={{
+      textTransform: 'none',
+      borderColor: onSale ? '#CA6DF2' : '#B86AD9',
+      backgroundColor: onSale ? '#B86AD9' : 'transparent',
+      color: onSale ? '#F2F2F2' : '#2D2D2D',
+    }}
+  >
+    {onSale ? 'Promociones' : 'Promociones'}
+  </Button>
+
         {categories.map((category) => (
           <Button
             key={category._id}
@@ -260,6 +407,7 @@ export default function CatalogoCliente() {
           ),
         }}
       />
+      </Box>
     </Box>
       <Grid container spacing={3}>
         {filteredProducts.map((product) => (
