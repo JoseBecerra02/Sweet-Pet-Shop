@@ -15,7 +15,9 @@ import {
   CardContent,
 } from "@mui/material";
 import Grid from '@mui/material/Grid';
-import { Menu as MenuIcon, Notifications, Home, People, Inventory, ShoppingCart, Logout, Assignment } from "@mui/icons-material";
+import { Menu as MenuIcon, Notifications, Home, People, Inventory, ShoppingCart, Logout, Assignment, CoPresent} from "@mui/icons-material";
+import ModeCommentIcon from '@mui/icons-material/ModeComment';
+import CoPresentIcon from '@mui/icons-material/CoPresent';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import Cookies from 'js-cookie';
 import axios from "axios";
@@ -23,6 +25,8 @@ import Catalogo from './Catalogo';
 import Informes from './Informes';
 import Orders from './Orders';
 import Users from './Users';
+import GestionSolicitudes from './GestionSolicitudes';
+import VistaUser from './GestionVistaUser';
 
 export default function AdminDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -235,6 +239,10 @@ export default function AdminDashboard() {
         return <Orders />;
       case 'users':
         return <Users />;
+      case 'solicitudes':
+        return <GestionSolicitudes />;
+      case 'vistaUser':
+        return <VistaUser />;
       default:
         return <div>Bienvenido al Panel de Administración</div>;
     }
@@ -289,6 +297,14 @@ export default function AdminDashboard() {
             <ListItem button onClick={() => setSelectedSection('orders')}>
               <ListItemIcon><ShoppingCart /></ListItemIcon>
               {sidebarOpen && <ListItemText primary="Órdenes" />}
+            </ListItem>
+            <ListItem button onClick={() => setSelectedSection('solicitudes')}>
+              <ListItemIcon><ModeCommentIcon /></ListItemIcon>
+              {sidebarOpen && <ListItemText primary="Gestión Solicitudes" />}
+            </ListItem>
+            <ListItem button onClick={() => setSelectedSection('vistaUser')}>
+              <ListItemIcon><CoPresentIcon /></ListItemIcon>
+              {sidebarOpen && <ListItemText primary="Gestión vista Usuario" />}
             </ListItem>
             <ListItem button onClick={handleLogout}>
               <ListItemIcon><Logout /></ListItemIcon>
