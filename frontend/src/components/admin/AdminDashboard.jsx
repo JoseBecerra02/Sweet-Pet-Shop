@@ -33,6 +33,10 @@ export default function AdminDashboard() {
   const [usuariosActivos, setUsuariosActivos] = useState(0);
   const [umbralMinimo, setUmbralMinimo] = useState(20); // Valor por defecto de 20
   const [salesData, setSalesData] = useState([]); // Nueva variable de estado para los datos de ventas
+  const [ventasMensuales, setVentasMensuales] = useState([]);
+  const [ventasPorUsuario, setVentasPorUsuario] = useState([]);
+  const [ventasPorCategoria, setVentasPorCategoria] = useState([]);
+
 
   useEffect(() => {
     // Obtener productos y calcular métricas de inventario
@@ -73,7 +77,7 @@ export default function AdminDashboard() {
       }
     };
 
-    // Obtener los datos de ventas mensuales
+
     const fetchSalesData = async () => {
       try {
         const response = await axios.get("http://localhost:3000/api/facturas/informes/ventas/mensual"); // Ruta del backend para ventas mensuales
@@ -120,7 +124,7 @@ export default function AdminDashboard() {
     }
   };
 
-  // Función para obtener los datos de ventas mensuales
+
   const fetchSalesData = async () => {
     try {
       const response = await axios.get("http://localhost:3000/api/factura/informes/ventas/mensual");
@@ -134,10 +138,40 @@ export default function AdminDashboard() {
     }
   };
 
+  const fetchVentasMensuales = async () => {
+    try {
+      const response = await axios.get("http://localhost:3000/api/factura/informes/ventas/mensual");
+      setVentasMensuales(response.data);
+    } catch (error) {
+      console.error("Error al obtener ventas mensuales:", error);
+    }
+  };
+
+  const fetchVentasPorUsuario = async () => {
+    try {
+      const response = await axios.get("http://localhost:3000/api/factura/informes/ventas/usuarios");
+      setVentasPorUsuario(response.data);
+    } catch (error) {
+      console.error("Error al obtener ventas por usuario:", error);
+    }
+  };
+
+  const fetchVentasPorCategoria = async () => {
+    try {
+      const response = await axios.get("http://localhost:3000/api/factura/informes/ventas/categorias");
+      setVentasPorCategoria(response.data);
+    } catch (error) {
+      console.error("Error al obtener ventas por categoría:", error);
+    }
+  };
+
   useEffect(() => {
     fetchInventarioData();
     fetchOrdenesData();
     fetchSalesData();
+    fetchVentasMensuales();
+    fetchVentasPorUsuario();
+    fetchVentasPorCategoria();
   }, []);
 
 
@@ -210,6 +244,39 @@ export default function AdminDashboard() {
                 </Card>
               </Grid>
             </Grid>
+
+          <Grid container spacing={2} sx={{marginTop:'60px'}}>
+            <Grid item xs={12} sm={6} md={2.4}>
+                <Card sx={{ height: "100%" }}>
+                  <CardContent>
+                    <Typography variant="subtitle1">Venta Total mensual</Typography>
+                    <Typography variant="h5" color="#CA6DF2">{ventasMensuales.length}</Typography>
+                    <Typography variant="caption" color="textSecondary">Total de ventas</Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+
+              <Grid item xs={12} sm={6} md={2.4}>
+                <Card sx={{ height: "100%" }}>
+                  <CardContent>
+                    <Typography variant="subtitle1">Venta Total por usuario</Typography>
+                    <Typography variant="h5" color="#CA6DF2">{ventasPorUsuario.length}</Typography>
+                    <Typography variant="caption" color="textSecondary">Total de ventas</Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+
+              <Grid item xs={12} sm={6} md={2.4}>
+                <Card sx={{ height: "100%" }}>
+                  <CardContent>
+                    <Typography variant="subtitle1">Venta Total por categoria</Typography>
+                    <Typography variant="h5" color="#CA6DF2">{ventasPorCategoria.length}</Typography>
+                    <Typography variant="caption" color="textSecondary">Total de ventas</Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              </Grid>
+
             {/* Gráfico de resumen de ventas */}
             <Card sx={{ mt: 4}}>
               <CardContent>
