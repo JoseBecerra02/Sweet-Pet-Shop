@@ -18,7 +18,7 @@ import Grid from '@mui/material/Grid';
 import { Menu as MenuIcon, Notifications, Home, People, Inventory, ShoppingCart, Logout, Assignment, CoPresent} from "@mui/icons-material";
 import ModeCommentIcon from '@mui/icons-material/ModeComment';
 import CoPresentIcon from '@mui/icons-material/CoPresent';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 import Cookies from 'js-cookie';
 import axios from "axios";
 import Catalogo from './Catalogo';
@@ -36,7 +36,8 @@ export default function AdminDashboard() {
   const [ordenesProcesadas, setOrdenesProcesadas] = useState(0);
   const [usuariosActivos, setUsuariosActivos] = useState(0);
   const [umbralMinimo, setUmbralMinimo] = useState(20); // Valor por defecto de 20
-  const [salesData, setSalesData] = useState([]); // Nueva variable de estado para los datos de ventas
+  const [salesData, setSalesData] = useState([]); // Datos de ventas
+  const [categoriasData, setCategoriasData] = useState([]); // Datos de categorías para el gráfico circular
 
   useEffect(() => {
     // Obtener productos y calcular métricas de inventario
@@ -51,6 +52,13 @@ export default function AdminDashboard() {
         setProductosDisponibles(totalCantidad);
         setProductosBajoInventario(bajoInventario);
         setUmbralMinimo(umbral);
+
+        // Calcular datos para el gráfico circular
+        const categorias = productos.reduce((acc, producto) => {
+          acc[producto.categoria] = (acc[producto.categoria] || 0) + producto.cantidad;
+          return acc;
+        }, {});
+        setCategoriasData(Object.entries(categorias).map(([name, value]) => ({ name, value })));
       } catch (error) {
         console.error("Error al obtener datos de inventario:", error);
       }
@@ -80,7 +88,7 @@ export default function AdminDashboard() {
     // Obtener los datos de ventas mensuales
     const fetchSalesData = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/api/facturas/informes/ventas/mensual"); // Ruta del backend para ventas mensuales
+        const response = await axios.get("http://localhost:3000/api/factura/informes/ventas/mensual"); // Ruta del backend para ventas mensuales
         const formattedData = response.data.map((item) => ({
           name: `${item._id.mes}/${item._id.anio}`,
           sales: item.totalVentas,
@@ -97,55 +105,6 @@ export default function AdminDashboard() {
     fetchSalesData(); // Llamada para obtener los datos de ventas
   }, []);
 
-    // Función para obtener y procesar datos de inventario
-  const fetchInventarioData = async () => {
-    try {
-      const productosResponse = await axios.get("http://localhost:3000/api/inventario/productos");
-      const productos = productosResponse.data;
-      const totalCantidad = productos.reduce((acc, producto) => acc + producto.cantidad, 0);
-      const umbral = productos[0]?.umbral || 20;
-      const bajoInventario = productos.filter(producto => producto.cantidad < umbral).length;
-
-      setProductosDisponibles(totalCantidad);
-      setProductosBajoInventario(bajoInventario);
-      setUmbralMinimo(umbral);
-    } catch (error) {
-      console.error("Error al obtener datos de inventario:", error);
-    }
-  };
-
-  // Función para obtener el número total de órdenes
-  const fetchOrdenesData = async () => {
-    try {
-      const ordenesResponse = await axios.get("http://localhost:3000/api/orden");
-      setOrdenesProcesadas(ordenesResponse.data.length);
-    } catch (error) {
-      console.error("Error al obtener datos de órdenes:", error);
-    }
-  };
-
-  // Función para obtener los datos de ventas mensuales
-  const fetchSalesData = async () => {
-    try {
-      const response = await axios.get("http://localhost:3000/api/factura/informes/ventas/mensual");
-      const formattedData = response.data.map((item) => ({
-        name: `${item._id.mes}/${item._id.anio}`,
-        sales: item.totalVentas,
-      }));
-      setSalesData(formattedData);
-    } catch (error) {
-      console.error("Error al obtener datos de ventas:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchInventarioData();
-    fetchOrdenesData();
-    fetchSalesData();
-  }, []);
-
-
-
   const toggleDrawer = () => {
     setSidebarOpen(!sidebarOpen);
   };
@@ -157,13 +116,15 @@ export default function AdminDashboard() {
     window.location.href = '/'; 
   };
 
+  const COLORS = ["#CA6DF2", "#B86AD9", "#F2F2F2", "#2D2D2D"];
+
   // Función para renderizar la sección seleccionada
   const renderSelectedSection = () => {
     switch (selectedSection) {
       case 'home':
         return (
           <>
-            <Grid container spacing={2} sx={{marginTop:'60px'}}>
+            <Grid container spacing={2} sx={{ marginTop: '60px' }}>
               <Grid item xs={12} sm={6} md={2.4}>
                 <Card sx={{ height: "100%" }}>
                   <CardContent>
@@ -213,22 +174,43 @@ export default function AdminDashboard() {
                   </CardContent>
                 </Card>
               </Grid>
+
+              <Grid item xs={12} md={6} sx={{ mt: 2 }}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6">Distribución de Productos por Categoría</Typography>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <PieChart>
+                        <Pie data={categoriasData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} fill="#B86AD9">
+                          {categoriasData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <Card sx={{ mt: 4 }}>
+                  <CardContent>
+                    <Typography variant="h6">Resumen de Ventas Mensuales</Typography>
+                    <ResponsiveContainer width="100%" height={300} style={{ padding: '10px' }}>
+                      <BarChart data={salesData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip />
+                        <Bar dataKey="sales" fill="#B86AD9" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              </Grid>
             </Grid>
-            {/* Gráfico de resumen de ventas */}
-            <Card sx={{ mt: 4}}>
-              <CardContent>
-                <Typography variant="h6">Resumen de Ventas Mensuales</Typography>
-                <ResponsiveContainer width="100%" height={300} style={{padding:'10px'}}>
-                  <BarChart data={salesData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="sales" fill="#B86AD9" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
           </>
         );
       case 'catalogo':
@@ -319,4 +301,4 @@ export default function AdminDashboard() {
       </Box>
     </Box>
   );
-}
+};
