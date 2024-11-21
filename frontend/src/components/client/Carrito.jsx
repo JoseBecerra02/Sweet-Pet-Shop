@@ -201,7 +201,7 @@ export default function Carrito() {
     setOpenInvoice(false);
   };
 
-  // Función para crear la factura
+  // Función para crear la factura y orden 
   const handleCreateInvoice = async () => {
     try {
         const token = Cookies.get('token');
@@ -217,37 +217,57 @@ export default function Carrito() {
             withCredentials: true,
         };
 
-      // Crear los datos para la factura
-      const facturaData = {
-        id_usuario: user._id,
-        id_correo: user.correo,
-        id_nombre: user.nombre,
-        productos: cartItems.map(item => ({
-          id_producto: item.id_producto,
-          nombre_producto: item.nombre_producto,
-          precio_unitario: item.precio_unitario,
-          cantidad: item.cantidad,
-          subtotal: item.precio_unitario * item.cantidad, // Calcular el subtotal correctamente
-        })),
-        valor_total: totalCarrito,
-      };
+        // Crear los datos para la factura
+        const facturaData = {
+            id_usuario: user._id,
+            id_correo: user.correo,
+            id_nombre: user.nombre,
+            productos: cartItems.map(item => ({
+                id_producto: item.id_producto,
+                nombre_producto: item.nombre_producto,
+                precio_unitario: item.precio_unitario,
+                cantidad: item.cantidad,
+                subtotal: item.precio_unitario * item.cantidad, // Calcular el subtotal correctamente
+            })),
+            valor_total: totalCarrito,
+        };
 
-      // Usar la URL correcta del endpoint
-      const response = await axios.post('http://localhost:3000/api/factura/factura/crear', facturaData, config);
+        // Usar la URL correcta del endpoint para crear la factura
+        const response = await axios.post('http://localhost:3000/api/factura/factura/crear', facturaData, config);
 
         if (response.status === 201) {
             console.log('Factura creada con éxito:', response.data);
-            setOpenInvoice(false);
             alert('Factura creada y enviada por correo.');
+            
+            // Crear datos para la orden
+            const ordenData = {
+                cliente: user._id,
+                productos: cartItems.map(item => item.id_producto),
+                total: totalCarrito,
+                estado: 'pendiente', // Estado inicial de la orden
+                subtotalesProductos: cartItems.map(item => item.precio_unitario * item.cantidad),
+                observaciones: 'Orden creada a partir de la factura',
+            };
+
+            // Crear la orden en el backend
+            const ordenResponse = await axios.post('http://localhost:3000/api/orden', ordenData, config);
+            
+            if (ordenResponse.status === 201) {
+                console.log('Orden creada con éxito:', ordenResponse.data);
+            } else {
+                console.error('Error al crear la orden:', ordenResponse);
+            }
+
+            setOpenInvoice(false);
             setCartItems([]); // Vacía el carrito después de crear la factura
         } else {
             console.error('Error al crear la factura:', response);
         }
     } catch (error) {
-        console.error('Error al crear la factura:', error);
-        alert('Hubo un error al crear la factura, por favor intenta nuevamente.');
+        console.error('Error al crear la factura o la orden:', error);
+        alert('Hubo un error al crear la factura y la orden, por favor intenta nuevamente.');
     }
-};
+  };
 
 
   return (

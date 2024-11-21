@@ -1,20 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import Cookies from 'js-cookie';
 import axios from 'axios';
-import "./App.css";
-import Perfil from './components/client/Perfil';
-import AdminDashboard from './components/admin/AdminDashboard';
-import Catalogo from './components/admin/Catalogo';
-import Users from './components/admin/Users';
-import ClienteDashboard from './components/client/ClienteDashboard';
 import { Typography, Box, Snackbar, Alert } from '@mui/material';
 import { styled } from '@mui/system';
-import CatalogoCliente from './components/client/CatalogoCliente';
-import Carrito from './components/client/Carrito';
-import Orders from './components/admin/Orders';
+import "./App.css";
 
+const Perfil = lazy(() => import('./components/client/Perfil'));
+const AdminDashboard = lazy(() => import( './components/admin/AdminDashboard'));
+const Catalogo = lazy(() => import( './components/admin/Catalogo'));
+const Users = lazy(() => import( './components/admin/Users'));
+const ClienteDashboard = lazy(() => import('./components/client/ClienteDashboard'));
+const CatalogoCliente = lazy(() => import('./components/client/CatalogoCliente'));
+const Carrito = lazy(() => import( './components/client/Carrito'));
+const Orders = lazy(() => import( './components/admin/Orders'));
+const Informes = lazy(() => import( './components/admin/Informes'));
+const GestionSolicitudes = lazy(() => import( './components/admin/GestionSolicitudes'));
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -116,6 +118,7 @@ const ContentBox = styled(Box)({
   return (
     <GoogleOAuthProvider clientId={'197152996427-tnahvkham0qkj09onm3a82mo3n6b0s2k.apps.googleusercontent.com'}>
       <Router>
+      <Suspense fallback={<div>Cargando...</div>}>
         <Routes>
           {/* Ruta principal */}
           <Route
@@ -152,7 +155,9 @@ const ContentBox = styled(Box)({
           <Route path="/catalogAdmin" element={isLoggedIn && userRole === 'admin' ? <Catalogo /> : <Navigate to="/" />} />
           <Route path="/Users" element={isLoggedIn && userRole === 'admin' ? <Users /> : <Navigate to="/" />} />
           <Route path="/orders" element={isLoggedIn && userRole === 'admin' ? <Orders /> : <Navigate to="/" />} />
-          <Route path="/informes" element={isLoggedIn && userRole === 'admin' ? <Users /> : <Navigate to="/" />} />
+          <Route path="/informes" element={isLoggedIn && userRole === 'admin' ? <Informes /> : <Navigate to="/" />} />
+          <Route path="/solicitudes" element={isLoggedIn && userRole === 'admin' ? <GestionSolicitudes /> : <Navigate to="/" />} />
+
 
           {/* Rutas para Cliente */}
           <Route path="/clienteapp" element={isLoggedIn && userRole === 'cliente' ? <ClienteDashboard /> : <Navigate to="/" />} />
@@ -162,6 +167,7 @@ const ContentBox = styled(Box)({
           {/* Redirección a Home si se accede a una ruta no válida */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
+      </Suspense>
        {/* Snackbar para mostrar mensajes de éxito o error */}
        <Snackbar
           open={openSnackbar}

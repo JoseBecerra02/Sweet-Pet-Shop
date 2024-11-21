@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Grid, Card, CardContent, CardMedia, Typography, Box, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button, Snackbar, Alert } from '@mui/material';
-import { ShoppingCart } from '@mui/icons-material';
+import { Grid, Card, CardContent, CardMedia, Typography, Box, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button, Snackbar, Alert, TextField, InputAdornment } from '@mui/material';
+import { ShoppingCart, Search } from '@mui/icons-material';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { TextField } from '@mui/material';
-import { InputAdornment } from '@mui/material';
-import { Search } from '@mui/icons-material';
 
 const defaultImageUrl = 'https://img.freepik.com/foto-gratis/perro-lindo-arte-digital_23-2151150544.jpg';
 
@@ -38,6 +35,8 @@ export default function CatalogoCliente() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [user, setUser] = useState({});
   const [searchQuery, setSearchQuery] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
+  const [highlightedSuggestion, setHighlightedSuggestion] = useState('');
 
   useEffect(() => {
     axios.get('http://localhost:3000/api/categoria')
@@ -81,24 +80,78 @@ export default function CatalogoCliente() {
           console.error('Token no encontrado');
           return;
         }
-  
+
         const config = {
           headers: {
             Authorization: `Bearer ${token}`,
           },
           withCredentials: true,
         };
-  
+
         const response = await axios.get('http://localhost:3000/api/usuarios/perfil', config);
         setUser(response.data.user);
       } catch (error) {
         console.error('Error al obtener el perfil:', error);
       }
     };
-  
+
     fetchProfile();
   }, []);
-  
+
+  const handleSearchChange = (event) => {
+    const query = event.target.value;
+    setSearchQuery(query);
+
+    if (query) {
+      const matchedSuggestions = products
+        .filter(product => product.nombre_producto.toLowerCase().startsWith(query.toLowerCase()))
+        .map(product => product.nombre_producto);
+
+      setSuggestions(matchedSuggestions);
+      setHighlightedSuggestion(matchedSuggestions[0] || '');
+    } else {
+      setSuggestions([]);
+      setHighlightedSuggestion('');
+    }
+
+    filterProducts(query, selectedCategories);
+  };
+
+  const handleKeyDown = (event) => {
+    if (event.key === 'Tab' && highlightedSuggestion) {
+      event.preventDefault();
+      setSearchQuery(highlightedSuggestion);
+      filterProducts(highlightedSuggestion, selectedCategories);
+      setSuggestions([]);
+    }
+  };
+
+  const filterProducts = (query, categories) => {
+    let filtered = products;
+
+    if (categories.length > 0) {
+      filtered = filtered.filter(product => categories.includes(product.categoria));
+    }
+
+    if (query) {
+      filtered = filtered.filter(product =>
+        product.nombre_producto.toLowerCase().includes(query.toLowerCase()) ||
+        product.categoriaNombre.toLowerCase().includes(query.toLowerCase())
+      );
+    }
+
+    setFilteredProducts(filtered);
+  };
+
+  const handleCategoryChange = (categoryId) => {
+    const updatedSelectedCategories = selectedCategories.includes(categoryId)
+      ? selectedCategories.filter((id) => id !== categoryId)
+      : [...selectedCategories, categoryId];
+
+    setSelectedCategories(updatedSelectedCategories);
+    filterProducts(searchQuery, updatedSelectedCategories);
+  };
+
   const handleOpenDialog = (product) => {
     setSelectedProduct(product);
     setDialogOpen(true);
@@ -110,91 +163,38 @@ export default function CatalogoCliente() {
   };
 
   const handleAddToCart = async (product) => {
-      try {
-          const token = Cookies.get('token');
-          if (!token) {
-              console.error('Token no encontrado');
-              alert('Por favor, inicia sesión para agregar productos al carrito.');
-              return;
-          }
-
-          const config = {
-              headers: {
-                  Authorization: `Bearer ${token}`,
-              },
-              withCredentials: true,
-          };
-
-          // Datos del carrito para enviar al backend
-          const carritoData = {
-              id_usuario: user._id,
-              id_producto: product._id,
-              cantidad: 1,
-          };
-
-          const response = await axios.post('http://localhost:3000/api/carrito/carrito/agregar', carritoData, config);
-          if (response.status === 200) {
-              console.log('Producto agregado al carrito con éxito:', response.data);
-              setSnackbarOpen(true);
-          } else {
-              console.error('Error al agregar el producto al carrito:', response);
-          }
-      } catch (error) {
-          if (error.response && error.response.status === 404) {
-              console.error('Error 404: Endpoint no encontrado. Verifica la URL.');
-          } else {
-              console.error('Error al agregar el producto al carrito:', error.message);
-          }
+    try {
+      const token = Cookies.get('token');
+      if (!token) {
+        alert('Por favor, inicia sesión para agregar productos al carrito.');
+        return;
       }
+
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        withCredentials: true,
+      };
+
+      const carritoData = {
+        id_usuario: user._id,
+        id_producto: product._id,
+        cantidad: 1,
+      };
+
+      const response = await axios.post('http://localhost:3000/api/carrito/carrito/agregar', carritoData, config);
+      if (response.status === 200) {
+        setSnackbarOpen(true);
+      }
+    } catch (error) {
+      console.error('Error al agregar el producto al carrito:', error.message);
+    }
   };
 
   const handleCloseSnackbar = () => {
     setSnackbarOpen(false);
   };
-
-  const handleCategoryChange = (categoryId) => {
-    const updatedSelectedCategories = selectedCategories.includes(categoryId)
-      ? selectedCategories.filter((id) => id !== categoryId)
-      : [...selectedCategories, categoryId];
-
-    setSelectedCategories(updatedSelectedCategories);
-    filterProducts(searchQuery, updatedSelectedCategories);
-
-    if (updatedSelectedCategories.length === 0) {
-      setFilteredProducts(products);
-    } else {
-      const newFilteredProducts = products.filter(product => 
-        updatedSelectedCategories.includes(product.categoria)
-      );
-      setFilteredProducts(newFilteredProducts);
-    }
-  };
-
-  const handleSearchChange = (event) => {
-    const query = event.target.value;
-    setSearchQuery(query);
-    filterProducts(query, selectedCategories);
-  };
-
-  const filterProducts = (query, categories) => {
-    let filtered = products;
-  
-    // Filtrar por categoría si hay categorías seleccionadas
-    if (categories.length > 0) {
-      filtered = filtered.filter(product => categories.includes(product.categoria));
-    }
-  
-    // Filtrar por búsqueda si hay un término de búsqueda
-    if (query) {
-      filtered = filtered.filter(product =>
-        product.nombre_producto.toLowerCase().includes(query.toLowerCase()) ||
-        product.categoriaNombre.toLowerCase().includes(query.toLowerCase())
-      );
-    }
-  
-    setFilteredProducts(filtered);
-  };
-  
 
   return (
     <Box sx={{ padding: 3, marginTop: -3, backgroundColor: 'white' }}>
@@ -202,65 +202,88 @@ export default function CatalogoCliente() {
         Catálogo de Productos
       </Typography>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
-      <Box sx={{ display: 'flex', gap: 2 }}>
-        {categories.map((category) => (
-          <Button
-            key={category._id}
-            variant={selectedCategories.includes(category._id) ? 'contained' : 'outlined'}
-            onClick={() => handleCategoryChange(category._id)}
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          {categories.map((category) => (
+            <Button
+              key={category._id}
+              variant={selectedCategories.includes(category._id) ? 'contained' : 'outlined'}
+              onClick={() => handleCategoryChange(category._id)}
+              sx={{
+                textTransform: 'none',
+                borderColor: selectedCategories.includes(category._id) ? '#CA6DF2' : '#B86AD9',
+                backgroundColor: selectedCategories.includes(category._id) ? '#B86AD9' : 'transparent',
+                color: selectedCategories.includes(category._id) ? '#F2F2F2' : '#2D2D2D',
+                '&:hover': {
+                  backgroundColor: selectedCategories.includes(category._id) ? '#A55BC0' : '#E0E0E0',
+                  color: '#2D2D2D'
+                }
+              }}
+            >
+              {category.nombre}
+            </Button>
+          ))}
+        </Box>
+        <TextField
+          variant="outlined"
+          placeholder="Buscar productos..."
+          value={searchQuery}
+          onChange={handleSearchChange}
+          onKeyDown={handleKeyDown}
+          sx={{
+            width: '300px',
+            '& .MuiOutlinedInput-root': {
+              '& fieldset': { borderColor: '#CA6DF2' },
+              '&:hover fieldset': { borderColor: '#B86AD9' },
+              '&.Mui-focused fieldset': { borderColor: '#A55BC0' },
+            },
+          }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="end">
+                <Search sx={{ color: '#CA6DF2' }} />
+              </InputAdornment>
+            ),
+          }}
+        />
+      </Box>
+
+      {suggestions.length > 0 && (
+        <Box sx={{ position: 'relative' }}>
+          <Box
             sx={{
-              textTransform: 'none',
-              borderColor: selectedCategories.includes(category._id) ? '#CA6DF2' : '#B86AD9',
-              backgroundColor: selectedCategories.includes(category._id) ? '#B86AD9' : 'transparent',
-              color: selectedCategories.includes(category._id) ? '#F2F2F2' : '#2D2D2D',
-              '&:hover': {
-                backgroundColor: selectedCategories.includes(category._id) ? '#A55BC0' : '#E0E0E0',
-                color: '#2D2D2D'
-              }
+              position: 'absolute',
+              backgroundColor: '#FFF',
+              border: '1px solid #CA6DF2',
+              borderRadius: '4px',
+              width: '300px',
+              zIndex: 10,
+              right: 0, 
+              marginTop: '-15px', 
             }}
           >
-            {category.nombre}
-          </Button>
-        ))}
-      </Box>
-      <TextField
-        variant="outlined"
-        placeholder="Buscar productos..."
-        value={searchQuery}
-        onChange={handleSearchChange}
-        sx={{
-          marginLeft: 2,
-          width: '300px',
-          '& .MuiOutlinedInput-root': {
-            '& fieldset': {
-              borderColor: '#CA6DF2',
-            },
-            '&:hover fieldset': {
-              borderColor: '#B86AD9',
-            },
-            '&.Mui-focused fieldset': {
-              borderColor: '#A55BC0',
-            },
-          },
-          '& .MuiInputBase-input': {
-            color: '#2D2D2D',
-            backgroundColor: 'white',
-            padding: '10px 14px',
-            borderRadius: '4px',
-          },
-          '& .MuiOutlinedInput-notchedOutline': {
-            borderRadius: '8px',
-          },
-        }}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <Search sx={{ color: '#CA6DF2' }} />
-            </InputAdornment>
-          ),
-        }}
-      />
-    </Box>
+            {suggestions.map((suggestion, index) => (
+              <Typography
+                key={index}
+                onClick={() => {
+                  setSearchQuery(suggestion);
+                  filterProducts(suggestion, selectedCategories);
+                  setSuggestions([]);
+                }}
+                sx={{
+                  padding: '8px',
+                  cursor: 'pointer',
+                  backgroundColor: suggestion === highlightedSuggestion ? '#CA6DF2' : 'transparent',
+                  color: suggestion === highlightedSuggestion ? '#FFF' : '#000',
+                  '&:hover': { backgroundColor: '#B86AD9', color: '#FFF' },
+                }}
+              >
+                {suggestion}
+              </Typography>
+            ))}
+          </Box>
+        </Box>
+      )}
+
       <Grid container spacing={3}>
         {filteredProducts.map((product) => (
           <Grid item xs={12} sm={6} md={4} key={product._id}>

@@ -77,7 +77,6 @@ const sendInvoiceEmail = async (to, invoiceDetails) => {
   await transporter.sendMail(mailOptions);
 };
 
-
 module.exports = {
   sendWelcomeEmail,
   sendSuspensionAlertEmail,
