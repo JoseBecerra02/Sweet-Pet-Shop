@@ -19,6 +19,7 @@ import { Menu as MenuIcon, Notifications, Home, People, Inventory, ShoppingCart,
 import ModeCommentIcon from '@mui/icons-material/ModeComment';
 import CoPresentIcon from '@mui/icons-material/CoPresent';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
+import { Alert } from "@mui/material";
 import Cookies from 'js-cookie';
 import axios from "axios";
 import Catalogo from './Catalogo';
@@ -38,12 +39,18 @@ export default function AdminDashboard() {
   const [umbralMinimo, setUmbralMinimo] = useState(20); // Valor por defecto de 20
   const [salesData, setSalesData] = useState([]); // Datos de ventas
   const [categoriasData, setCategoriasData] = useState([]); // Datos de categorías para el gráfico circular
+  const [error, setError] = useState(null);
+
 
   useEffect(() => {
     // Obtener productos y calcular métricas de inventario
     const fetchInventarioData = async () => {
+      const timeout = setTimeout(() => {
+        setError("La carga de datos de inventario está tardando demasiado. Por favor, intente nuevamente.");
+      }, 3000);
       try {
         const productosResponse = await axios.get("http://localhost:3000/api/inventario/productos");
+        clearTimeout(timeout); // Cancela el timeout si la respuesta llega a tiempo
         const productos = productosResponse.data;
         const totalCantidad = productos.reduce((acc, producto) => acc + producto.cantidad, 0);
         const umbral = productos[0]?.umbral || 20; // Suponiendo que el umbral es igual para todos los productos
@@ -60,41 +67,57 @@ export default function AdminDashboard() {
         }, {});
         setCategoriasData(Object.entries(categorias).map(([name, value]) => ({ name, value })));
       } catch (error) {
+        clearTimeout(timeout); // Cancela el timeout en caso de error
         console.error("Error al obtener datos de inventario:", error);
       }
     };
 
     // Obtener el número total de órdenes
     const fetchOrdenesData = async () => {
+      const timeout = setTimeout(() => {
+        setError("La carga de datos de órdenes está tardando demasiado. Por favor, intente nuevamente.");
+      }, 3000);
       try {
         const ordenesResponse = await axios.get("http://localhost:3000/api/orden");
+        clearTimeout(timeout);
         setOrdenesProcesadas(ordenesResponse.data.length);
       } catch (error) {
+        clearTimeout(timeout);
         console.error("Error al obtener datos de órdenes:", error);
       }
     };
 
     // Obtener el número de usuarios activos
     const fetchUsuariosData = async () => {
+      const timeout = setTimeout(() => {
+        setError("La carga de datos de usuarios está tardando demasiado. Por favor, intente nuevamente.");
+      }, 3000);
       try {
         const usuariosResponse = await axios.get("http://localhost:3000/api/usuarios/usuarios");
+        clearTimeout(timeout);
         const activos = usuariosResponse.data.filter(usuario => usuario.estado === "activo").length;
         setUsuariosActivos(activos);
       } catch (error) {
+        clearTimeout(timeout);
         console.error("Error al obtener datos de usuarios:", error);
       }
     };
 
     // Obtener los datos de ventas mensuales
     const fetchSalesData = async () => {
+      const timeout = setTimeout(() => {
+        setError("La carga de datos de ventas está tardando demasiado. Por favor, intente nuevamente.");
+      }, 3000);
       try {
         const response = await axios.get("http://localhost:3000/api/factura/informes/ventas/mensual"); // Ruta del backend para ventas mensuales
+        clearTimeout(timeout);
         const formattedData = response.data.map((item) => ({
           name: `${item._id.mes}/${item._id.anio}`,
           sales: item.totalVentas,
         }));
         setSalesData(formattedData);
       } catch (error) {
+        clearTimeout(timeout);
         console.error("Error al obtener datos de ventas:", error);
       }
     };
@@ -297,6 +320,11 @@ export default function AdminDashboard() {
       </Drawer>
 
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+        {error && (
+          <Alert severity="error" onClose={() => setError(null)} sx={{marginTop:6}}>
+            {error}
+          </Alert>
+        )}
         {renderSelectedSection()}
       </Box>
     </Box>
