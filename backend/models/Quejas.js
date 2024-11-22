@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const generarIdSecuencial = require('../middlewares/generarIdSecuencial'); // Middleware para generar id secuencial
 
 const Schema = mongoose.Schema;
 
@@ -6,6 +7,16 @@ const QuejaSchema = new Schema({
     id_usuario: {
         type: Schema.Types.ObjectId,
         ref: 'Usuario',
+        required: true
+    },
+    id_orden: {
+        type: Schema.Types.ObjectId,
+        ref: 'Orden',
+        required: true
+    },
+    id_queja: { type: Number, unique: true, required: true, default: 0, min: 0 },
+    asunto: {
+        type: String,
         required: true
     },
     descripcion: {
@@ -23,4 +34,5 @@ const QuejaSchema = new Schema({
     }
 });
 
+QuejaSchema.pre('save', generarIdSecuencial('Queja', 'id_queja'));
 module.exports = mongoose.model('Queja', QuejaSchema);
