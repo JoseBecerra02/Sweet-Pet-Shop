@@ -102,5 +102,18 @@ router.patch('/estado/:id_orden', async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 });
+// Obtener todas las órdenes de un usuario por ID de cliente
+router.get('/cliente/:id_cliente', async (req, res) => {
+    try {
+        const { id_cliente } = req.params;
+        const ordenes = await Orden.find({ cliente: id_cliente });
+        if (ordenes.length === 0) {
+            return res.status(404).json({ message: 'No se encontraron órdenes para este cliente' });
+        }
+        res.json(ordenes);
+    } catch (error) {
+        res.status(500).json({ error: 'Error al obtener órdenes del cliente' });
+    }
+});
 
 module.exports = router;
