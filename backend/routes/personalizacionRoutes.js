@@ -6,7 +6,7 @@ const Personalizacion = require('../models/Personalizacion');
 const Inventario = require('../models/Inventario');
 
 // POST /api/personalizaciones
-router.post('/', async (req, res) => {
+router.post('/personalizacion', async (req, res) => {
   try {
     const { usuarioId, productoId, opciones } = req.body;
 
