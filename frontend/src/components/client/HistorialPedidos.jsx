@@ -15,6 +15,7 @@ export default function HistorialPedidos() {
   const [expandedOrder, setExpandedOrder] = useState(null);
   const [expandedComplaint, setExpandedComplaint] = useState(null);
   const [showAlert, setShowAlert] = useState(false);
+  const [userId, setUserId] = useState('');
 
   useEffect(() => {
     const fetchOrderHistory = async () => {
@@ -35,9 +36,11 @@ export default function HistorialPedidos() {
         // Obtener el perfil del usuario para saber el ID
         const profileResponse = await axios.get('http://localhost:3000/api/usuarios/perfil', config);
         const userId = profileResponse.data.user._id;
+        setUserId(userId);
 
         // Obtener las órdenes del usuario
-        const response = await axios.get(`http://localhost:3000/api/orden?cliente=${userId}`, config);
+
+        const response = await axios.get(`http://localhost:3000/api/orden/cliente/${userId}`, config);
         setOrderHistory(response.data);
       } catch (error) {
         console.error('Error al obtener el historial de pedidos:', error);
@@ -62,20 +65,36 @@ export default function HistorialPedidos() {
     }));
   };
 
-  const handleAddComplaint = () => {
+  const handleAddComplaint = async () => {
     if (newComplaint.orderId && newComplaint.subject && newComplaint.description) {
-      const newId = complaints.length + 1;
-      const currentDate = new Date().toISOString().split('T')[0];
+      console.log('Agregando nueva queja:', newComplaint);
       const newEntry = {
-        id: newId,
-        userId: 103, // Placeholder userId, this could be dynamic in the future
-        orderId: parseInt(newComplaint.orderId),
-        subject: newComplaint.subject,
-        status: 'Pendiente',
-        description: newComplaint.description,
-        date: currentDate,
-        response: 'Lo sentimos, estamos revisando el problema y tomaremos las acciones necesarias para solucionarlo.', // Respuesta quemada para ejemplo
+        id_orden: newComplaint.orderId,
+        id_usuario: userId,
+        asunto: newComplaint.subject,
+        descripcion: newComplaint.description,
       };
+      try {
+        const token = Cookies.get('token');
+        if (!token) {
+          console.error('Token no encontrado');
+          return;
+        }
+
+        const config = {
+          headers: {
+        Authorization: `Bearer ${token}`,
+          },
+          withCredentials: true,
+        };
+
+        const response = await axios.post('http://localhost:3000/api/quejas', newEntry, config);
+        console.log('Respuesta del servidor:', response.data);
+      } catch (error) {
+        console.error('Error al agregar la queja: ', error);
+      }
+
+      console.log('Nueva queja:', newEntry);
       setComplaints((prev) => [...prev, newEntry]);
       setNewComplaint({ orderId: '', subject: '', description: '' });
     }
@@ -196,7 +215,7 @@ export default function HistorialPedidos() {
           margin="normal"
         >
           {orderHistory.map((order) => (
-            <MenuItem key={order._id} value={order.id_orden}>
+            <MenuItem key={order._id} value={order._id}>
               Pedido #{order.id_orden} - ${order.total}
             </MenuItem>
           ))}
