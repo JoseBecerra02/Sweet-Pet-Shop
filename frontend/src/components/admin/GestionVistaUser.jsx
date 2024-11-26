@@ -39,7 +39,7 @@ export default function VistaUser() {
   };
   const fetchBanners = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/banner');
+      const response = await fetch('https://sweet-pet-shop-production.up.railway.app/api/banner');
       const data = await response.json();
       setBanners(data);
       console.log('Banners:', data);
@@ -60,7 +60,7 @@ export default function VistaUser() {
     
     if (isEditing) {
       try {
-        const response = await fetch(`http://localhost:3000/api/banner/${currentBanner.id_banner}`, {
+        const response = await fetch(`https://sweet-pet-shop-production.up.railway.app/api/banner/${currentBanner.id_banner}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -75,7 +75,7 @@ export default function VistaUser() {
       }
     } else {
       try {
-        const response = await fetch('http://localhost:3000/api/banner', {
+        const response = await fetch('https://sweet-pet-shop-production.up.railway.app/api/banner', {
           method: 'POST',
           headers: {
         'Content-Type': 'application/json',
@@ -93,7 +93,7 @@ export default function VistaUser() {
 
   const handleDeleteBanner = async (id) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/banner/${id}`, {
+      const response = await fetch(`https://sweet-pet-shop-production.up.railway.app/api/banner/${id}`, {
         method: 'DELETE',
       });
       if (response.ok) {

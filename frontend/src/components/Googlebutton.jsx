@@ -14,7 +14,7 @@ const MyGoogleLoginButton = ({ onLoginSuccess }) => {
       const { credential } = credentialResponse;
 
       // Enviar el token al backend para autenticar
-      const res = await axios.post('http://localhost:3000/api/usuarios/google-login', { token: credential });
+      const res = await axios.post('https://sweet-pet-shop-production.up.railway.app/api/usuarios/google-login', { token: credential });
 
       // Guardar el token y rol en cookies
       Cookies.set('token', res.data.token, { expires: 5 });
