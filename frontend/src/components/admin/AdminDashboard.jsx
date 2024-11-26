@@ -43,7 +43,7 @@ export default function AdminDashboard() {
     // Obtener productos y calcular métricas de inventario
     const fetchInventarioData = async () => {
       try {
-        const productosResponse = await axios.get("http://localhost:3000/api/inventario/productos");
+        const productosResponse = await axios.get("https://sweet-pet-shop-production.up.railway.app/api/inventario/productos");
         const productos = productosResponse.data;
         const totalCantidad = productos.reduce((acc, producto) => acc + producto.cantidad, 0);
         const umbral = productos[0]?.umbral || 20; // Suponiendo que el umbral es igual para todos los productos
@@ -67,7 +67,7 @@ export default function AdminDashboard() {
     // Obtener el número total de órdenes
     const fetchOrdenesData = async () => {
       try {
-        const ordenesResponse = await axios.get("http://localhost:3000/api/orden");
+        const ordenesResponse = await axios.get("https://sweet-pet-shop-production.up.railway.app/api/orden");
         setOrdenesProcesadas(ordenesResponse.data.length);
       } catch (error) {
         console.error("Error al obtener datos de órdenes:", error);
@@ -77,7 +77,7 @@ export default function AdminDashboard() {
     // Obtener el número de usuarios activos
     const fetchUsuariosData = async () => {
       try {
-        const usuariosResponse = await axios.get("http://localhost:3000/api/usuarios/usuarios");
+        const usuariosResponse = await axios.get("https://sweet-pet-shop-production.up.railway.app/api/usuarios/usuarios");
         const activos = usuariosResponse.data.filter(usuario => usuario.estado === "activo").length;
         setUsuariosActivos(activos);
       } catch (error) {
@@ -88,7 +88,7 @@ export default function AdminDashboard() {
     // Obtener los datos de ventas mensuales
     const fetchSalesData = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/api/factura/informes/ventas/mensual"); // Ruta del backend para ventas mensuales
+        const response = await axios.get("https://sweet-pet-shop-production.up.railway.app/api/factura/informes/ventas/mensual"); // Ruta del backend para ventas mensuales
         const formattedData = response.data.map((item) => ({
           name: `${item._id.mes}/${item._id.anio}`,
           sales: item.totalVentas,

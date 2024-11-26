@@ -68,7 +68,7 @@ export default function AdminReports() {
   // Funciones para obtener datos de la API
   const fetchVentasMensuales = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/api/factura/informes/ventas/mensual");
+      const response = await axios.get("https://sweet-pet-shop-production.up.railway.app/api/factura/informes/ventas/mensual");
       setVentasMensuales(response.data);
     } catch (error) {
       console.error("Error al obtener ventas mensuales:", error);
@@ -77,7 +77,7 @@ export default function AdminReports() {
 
   const fetchVentasPorUsuario = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/api/factura/informes/ventas/usuarios");
+      const response = await axios.get("https://sweet-pet-shop-production.up.railway.app/api/factura/informes/ventas/usuarios");
       setVentasPorUsuario(response.data);
     } catch (error) {
       console.error("Error al obtener ventas por usuario:", error);
@@ -86,7 +86,7 @@ export default function AdminReports() {
 
   const fetchVentasPorCategoria = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/api/factura/informes/ventas/categorias");
+      const response = await axios.get("https://sweet-pet-shop-production.up.railway.app/api/factura/informes/ventas/categorias");
       setVentasPorCategoria(response.data);
     } catch (error) {
       console.error("Error al obtener ventas por categoría:", error);
@@ -171,8 +171,8 @@ export default function AdminReports() {
         Ventas Mensuales
       </Typography>
       <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-        <CustomButton onClick={() => downloadPDF("http://localhost:3000/api/factura/informes/ventas/mensual/pdf")}>Descargar PDF</CustomButton>
-        <CustomButton onClick={() => downloadExcel("http://localhost:3000/api/factura/informes/ventas/mensual/excel")}>Descargar Excel</CustomButton>
+        <CustomButton onClick={() => downloadPDF("https://sweet-pet-shop-production.up.railway.app/api/factura/informes/ventas/mensual/pdf")}>Descargar PDF</CustomButton>
+        <CustomButton onClick={() => downloadExcel("https://sweet-pet-shop-production.up.railway.app/api/factura/informes/ventas/mensual/excel")}>Descargar Excel</CustomButton>
       </Box>
       <TableContainer component={Paper}>
         <Table>
@@ -200,8 +200,8 @@ export default function AdminReports() {
         Ventas por Usuario
       </Typography>
       <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-        <CustomButton onClick={() => downloadPDF("http://localhost:3000/api/factura/informes/ventas/usuarios/pdf")}>Descargar PDF</CustomButton>
-        <CustomButton onClick={() => downloadExcel("http://localhost:3000/api/factura/informes/ventas/usuarios/excel")}>Descargar Excel</CustomButton>
+        <CustomButton onClick={() => downloadPDF("https://sweet-pet-shop-production.up.railway.app/api/factura/informes/ventas/usuarios/pdf")}>Descargar PDF</CustomButton>
+        <CustomButton onClick={() => downloadExcel("https://sweet-pet-shop-production.up.railway.app/api/factura/informes/ventas/usuarios/excel")}>Descargar Excel</CustomButton>
       </Box>
       <TableContainer component={Paper}>
         <Table>
@@ -233,8 +233,8 @@ export default function AdminReports() {
         Ventas por Categoría
       </Typography>
       <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-        <CustomButton onClick={() => downloadPDF("http://localhost:3000/api/factura/informes/ventas/categorias/pdf")}>Descargar PDF</CustomButton>
-        <CustomButton onClick={() => downloadExcel("http://localhost:3000/api/factura/informes/ventas/categorias/excel")}>Descargar Excel</CustomButton>
+        <CustomButton onClick={() => downloadPDF("https://sweet-pet-shop-production.up.railway.app/api/factura/informes/ventas/categorias/pdf")}>Descargar PDF</CustomButton>
+        <CustomButton onClick={() => downloadExcel("https://sweet-pet-shop-production.up.railway.app/api/factura/informes/ventas/categorias/excel")}>Descargar Excel</CustomButton>
       </Box>
       <TableContainer component={Paper}>
         <Table>
