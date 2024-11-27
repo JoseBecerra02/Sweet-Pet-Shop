@@ -3,7 +3,7 @@ import { Grid, Card, CardContent, CardMedia, Typography, Box, Dialog, DialogTitl
 import { ShoppingCart, Search } from '@mui/icons-material';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas } from '@react-three/fiber';
 import { OrbitControls, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 
@@ -16,13 +16,11 @@ function CollarModel({ color }) {
     if (materials) {
       console.log('Materiales disponibles:', materials);
 
-      // Lista de materiales que quieres personalizar (solo los grises)
-      const customizableMaterialNames = ["", "Dark Brown Leather", "metal"];
+      const customizableMaterialNames = ['', 'Dark Brown Leather', 'metal'];
       customizableMaterialNames.forEach((materialName) => {
         if (materials[materialName]) {
           console.log(`Aplicando color a ${materialName}`);
-          // Solo cambiar el color de la parte central de la cinta
-          if (materialName === "") {
+          if (materialName === '') {
             materials[materialName].color = new THREE.Color(color);
           }
           materials[materialName].metalness = 0.5;
@@ -40,6 +38,7 @@ function CollarModel({ color }) {
 function ProductDetailsModal({ open, onClose, product, onSaveCustomization }) {
   const [user, setUser] = useState({});
   const [selectedColor, setSelectedColor] = useState('');
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -66,11 +65,10 @@ function ProductDetailsModal({ open, onClose, product, onSaveCustomization }) {
     fetchProfile();
   }, []);
 
-
   const handleSaveCustomization = () => {
     if (product && product.nombre_producto === "Collar para perros") {
       const customizationData = {
-        usuarioId: user._id, // Necesitas tener el id del usuario autenticado
+        usuarioId: user._id,
         productoId: product._id,
         opciones: {
           color: selectedColor,
@@ -80,7 +78,6 @@ function ProductDetailsModal({ open, onClose, product, onSaveCustomization }) {
       onSaveCustomization(customizationData);
     }
   };
-
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -92,7 +89,7 @@ function ProductDetailsModal({ open, onClose, product, onSaveCustomization }) {
           <Typography variant="body1">{product.descripcion}</Typography>
           <Typography variant="body2" color="textSecondary">Categoría: {product.categoriaNombre}</Typography>
         </DialogContentText>
-        
+
         {product.nombre_producto === "Collar para perros" && (
           <Box sx={{ marginTop: 3 }}>
             <Typography variant="h6" gutterBottom>Personaliza tu collar</Typography>
@@ -149,12 +146,10 @@ export default function CatalogoCliente() {
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [highlightedSuggestion, setHighlightedSuggestion] = useState('');
-
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
   const [inStock, setInStock] = useState(false);
   const [onSale, setOnSale] = useState(false);
-
   const [sortOrder, setSortOrder] = useState('asc');
 
   useEffect(() => {
@@ -180,8 +175,8 @@ export default function CatalogoCliente() {
             return {
               ...product,
               categoriaNombre: category ? category.nombre : 'Sin Categoría',
-              cantidad: product.cantidad || 0, // NUEVO CAMPO
-              enPromocion: product.enPromocion || false // NUEVO CAMPO
+              cantidad: product.cantidad || 0,
+              enPromocion: product.enPromocion || false
             };
           });
           setProducts(productsWithCategoryNames);
@@ -195,7 +190,7 @@ export default function CatalogoCliente() {
 
   useEffect(() => {
     filterProducts(searchQuery, selectedCategories);
-  }, [minPrice, maxPrice, inStock, onSale, sortOrder]); // NUEVA DEPENDENCIA
+  }, [minPrice, maxPrice, inStock, onSale, sortOrder]);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -265,6 +260,27 @@ export default function CatalogoCliente() {
       );
     }
 
+    if (minPrice !== '') {
+      filtered = filtered.filter(product => product.precio >= parseFloat(minPrice));
+    }
+    if (maxPrice !== '') {
+      filtered = filtered.filter(product => product.precio <= parseFloat(maxPrice));
+    }
+
+    if (inStock) {
+      filtered = filtered.filter(product => product.cantidad > 0);
+    }
+
+    if (onSale) {
+      filtered = filtered.filter(product => product.enPromocion === true);
+    }
+
+    if (sortOrder === 'asc') {
+      filtered.sort((a, b) => a.precio - b.precio);
+    } else {
+      filtered.sort((a, b) => b.precio - a.precio);
+    }
+
     setFilteredProducts(filtered);
   };
 
@@ -321,38 +337,10 @@ export default function CatalogoCliente() {
     try {
       console.log('Datos de personalización recibidos:', customizationData);
       const token = Cookies.get('token');
-      console.log('Token encontrado:', token);
       if (!token) {
         alert('Por favor, inicia sesión para personalizar productos.');
         return;
       }
-  
-   // Filtrar por rango de precios
-   if (minPrice !== '') {
-    filtered = filtered.filter(product => product.precio >= parseFloat(minPrice));
-  }
-  if (maxPrice !== '') {
-    filtered = filtered.filter(product => product.precio <= parseFloat(maxPrice));
-  }
-
-  // Filtrar por disponibilidad (en stock)
-  if (inStock) {
-    filtered = filtered.filter(product => product.cantidad > 0);
-  }
-
-  // Filtrar por promociones
-  if (onSale) {
-    filtered = filtered.filter(product => product.enPromocion === true); // Asegúrate de que tu backend devuelva `enPromocion`
-  }
-
-  // Ordenar productos por precio
-  if (sortOrder === 'asc') {
-    filtered.sort((a, b) => a.precio - b.precio);
-  } else {
-    filtered.sort((a, b) => b.precio - a.precio);
-  }
-
-  setFilteredProducts(filtered);
 
       const config = {
         headers: {
@@ -360,18 +348,13 @@ export default function CatalogoCliente() {
         },
         withCredentials: true,
       };
-  
-      console.log('Configuración de la petición:', config);
+
       const response = await axios.post('http://localhost:3000/personalizacion/personalizacion', customizationData, config);
-      console.log('Respuesta del servidor:', response);
-  
       if (response.status === 201) {
         alert('Personalización guardada exitosamente!');
-  
-        // Extraer el ID de la personalización guardada
+
         const personalizacionId = response.data.personalizacion._id;
-  
-        // Agregar la personalización al carrito
+
         handleAddPersonalizationToCart({
           id_usuario: user._id,
           id_personalizacion: personalizacionId,
@@ -382,27 +365,23 @@ export default function CatalogoCliente() {
       console.error('Error al guardar la personalización:', error.message);
     }
   };
-  
+
   const handleAddPersonalizationToCart = async (cartData) => {
     try {
-      console.log('Datos de personalización para agregar al carrito:', cartData);
       const token = Cookies.get('token');
-      console.log('Token encontrado:', token);
       if (!token) {
         alert('Por favor, inicia sesión para agregar productos al carrito.');
         return;
       }
-  
+
       const config = {
         headers: {
           Authorization: `Bearer ${token}`,
         },
         withCredentials: true,
       };
-  
+
       const response = await axios.post('http://localhost:3000/api/carrito/carrito/agregarPersonalizacion', cartData, config);
-      console.log('Respuesta del servidor al agregar al carrito:', response);
-  
       if (response.status === 200) {
         alert('Producto personalizado agregado al carrito exitosamente!');
       }
@@ -410,7 +389,6 @@ export default function CatalogoCliente() {
       console.error('Error al agregar el producto personalizado al carrito:', error.message);
     }
   };
-   
 
   const handleCloseSnackbar = () => {
     setSnackbarOpen(false);
@@ -421,162 +399,69 @@ export default function CatalogoCliente() {
       <Typography variant="h4" gutterBottom sx={{ color: '#CA6DF2', textAlign: 'center', marginBottom: '40px', fontWeight: 'bold' }}>
         Catálogo de Productos
       </Typography>
-  <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', marginBottom: 3 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
-      <Box sx={{ display: 'flex', gap: 2 }}>
-      <Box sx={{ padding: 3, marginTop: -3, backgroundColor: 'white' }}></Box>
-      <TextField
-    type="number"
-    variant="outlined"
-    placeholder="Precio mínimo"
-    value={minPrice}
-    onChange={(e) => setMinPrice(e.target.value)}
-    sx={{
-      width: '150px',
-      textTransform: 'none',
-      '& .MuiOutlinedInput-root': {
-        borderColor: '#B86AD9',
-        borderRadius: '8px',
-        backgroundColor: 'transparent',
-        color: '#2D2D2D',
-        '& fieldset': {
-          borderColor: minPrice ? '#CA6DF2' : '#B86AD9',
-        },
-        '&:hover fieldset': {
-          borderColor: '#CA6DF2',
-        },
-        '&.Mui-focused fieldset': {
-          borderColor: '#A55BC0',
-        },
-      },
-      '& .MuiInputBase-input': {
-        padding: '10px 14px',
-        color: minPrice ? '#F2F2F2' : '#2D2D2D',
-        backgroundColor: minPrice ? '#B86AD9' : 'transparent',
-        borderRadius: '4px',
-      },
-    }}
-  />
-  <TextField
-    type="number"
-    variant="outlined"
-    placeholder="Precio máximo"
-    value={maxPrice}
-    onChange={(e) => setMaxPrice(e.target.value)}
-    sx={{
-      width: '150px',
-      textTransform: 'none',
-      '& .MuiOutlinedInput-root': {
-        borderColor: '#B86AD9',
-        borderRadius: '8px',
-        backgroundColor: 'transparent',
-        color: '#2D2D2D',
-        '& fieldset': {
-          borderColor: minPrice ? '#CA6DF2' : '#B86AD9',
-        },
-        '&:hover fieldset': {
-          borderColor: '#CA6DF2',
-        },
-        '&.Mui-focused fieldset': {
-          borderColor: '#A55BC0',
-        },
-      },
-      '& .MuiInputBase-input': {
-        padding: '10px 14px',
-        color: minPrice ? '#F2F2F2' : '#2D2D2D',
-        backgroundColor: minPrice ? '#B86AD9' : 'transparent',
-        borderRadius: '4px',
-      },
-    }}
-  />
-  <Button
-  variant="outlined"
-  onClick={() => {
-    const newOrder = sortOrder === 'asc' ? 'desc' : 'asc';
-    setSortOrder(newOrder);
-    filterProducts(searchQuery, selectedCategories);
-  }}
-  sx={{
-    textTransform: 'none',
-    borderColor: '#CA6DF2',
-    color: '#2D2D2D',
-    '&:hover': {
-      backgroundColor: '#A55BC0',
-      color: '#F2F2F2'
-    }
-  }}
->
-  Ordenar por precio: {sortOrder === 'asc' ? 'Ascendente' : 'Descendente'}
-</Button>
-  <Button
-    variant={inStock ? 'contained' : 'outlined'}
-    onClick={() => setInStock(!inStock)}
-    sx={{
-      textTransform: 'none',
-      borderColor: inStock ? '#CA6DF2' : '#B86AD9',
-      backgroundColor: inStock ? '#B86AD9' : 'transparent',
-      color: inStock ? '#F2F2F2' : '#2D2D2D',
-    }}
-  >
-    {inStock ? 'En Stock' : 'En Stock'}
-  </Button>
-  <Button
-    variant={onSale ? 'contained' : 'outlined'}
-    onClick={() => setOnSale(!onSale)}
-    sx={{
-      textTransform: 'none',
-      borderColor: onSale ? '#CA6DF2' : '#B86AD9',
-      backgroundColor: onSale ? '#B86AD9' : 'transparent',
-      color: onSale ? '#F2F2F2' : '#2D2D2D',
-    }}
-  >
-    {onSale ? 'Promociones' : 'Promociones'}
-  </Button>
-
+      <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', marginBottom: 3 }}>
+        <TextField
+          type="number"
+          variant="outlined"
+          placeholder="Precio mínimo"
+          value={minPrice}
+          onChange={(e) => setMinPrice(e.target.value)}
+          sx={{ width: '150px', marginRight: 2 }}
+        />
+        <TextField
+          type="number"
+          variant="outlined"
+          placeholder="Precio máximo"
+          value={maxPrice}
+          onChange={(e) => setMaxPrice(e.target.value)}
+          sx={{ width: '150px', marginRight: 2 }}
+        />
+        <Button
+          variant="outlined"
+          onClick={() => {
+            const newOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+            setSortOrder(newOrder);
+            filterProducts(searchQuery, selectedCategories);
+          }}
+          sx={{ textTransform: 'none', marginRight: 2 }}
+        >
+          Ordenar por precio: {sortOrder === 'asc' ? 'Ascendente' : 'Descendente'}
+        </Button>
+        <Button
+          variant={inStock ? 'contained' : 'outlined'}
+          onClick={() => setInStock(!inStock)}
+          sx={{ textTransform: 'none', marginRight: 2 }}
+        >
+          {inStock ? 'En Stock' : 'En Stock'}
+        </Button>
+        <Button
+          variant={onSale ? 'contained' : 'outlined'}
+          onClick={() => setOnSale(!onSale)}
+          sx={{ textTransform: 'none', marginRight: 2 }}
+        >
+          {onSale ? 'Promociones' : 'Promociones'}
+        </Button>
         {categories.map((category) => (
           <Button
             key={category._id}
             variant={selectedCategories.includes(category._id) ? 'contained' : 'outlined'}
             onClick={() => handleCategoryChange(category._id)}
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          {categories.map((category) => (
-            <Button
-              key={category._id}
-              variant={selectedCategories.includes(category._id) ? 'contained' : 'outlined'}
-              onClick={() => handleCategoryChange(category._id)}
-              sx={{
-                textTransform: 'none',
-                borderColor: selectedCategories.includes(category._id) ? '#CA6DF2' : '#B86AD9',
-                backgroundColor: selectedCategories.includes(category._id) ? '#B86AD9' : 'transparent',
-                color: selectedCategories.includes(category._id) ? '#F2F2F2' : '#2D2D2D',
-                '&:hover': {
-                  backgroundColor: selectedCategories.includes(category._id) ? '#A55BC0' : '#E0E0E0',
-                  color: '#2D2D2D'
-                }
-              }}
-            >
-              {category.nombre}
-            </Button>
-          ))}
-        </Box>
+            sx={{ textTransform: 'none', marginRight: 2 }}
+          >
+            {category.nombre}
+          </Button>
+        ))}
         <TextField
           variant="outlined"
           placeholder="Buscar productos..."
           value={searchQuery}
           onChange={handleSearchChange}
           onKeyDown={handleKeyDown}
-          sx={{
-            width: '300px',
-            '& .MuiOutlinedInput-root': {
-              '& fieldset': { borderColor: '#CA6DF2' },
-              '&:hover fieldset': { borderColor: '#B86AD9' },
-              '&.Mui-focused fieldset': { borderColor: '#A55BC0' },
-            },
-          }}
+          sx={{ width: '300px' }}
           InputProps={{
             startAdornment: (
-              <InputAdornment position="end">
-                <Search sx={{ color: '#CA6DF2' }} />
+              <InputAdornment position="start">
+                <Search />
               </InputAdornment>
             ),
           }}
@@ -593,53 +478,9 @@ export default function CatalogoCliente() {
               borderRadius: '4px',
               width: '300px',
               zIndex: 10,
-              right: 0, 
-              marginTop: '-15px', 
+              marginTop: '-15px',
             }}
           >
-            {category.nombre}
-          </Button>
-        ))}
-      </Box>
-      <TextField
-        variant="outlined"
-        placeholder="Buscar productos..."
-        value={searchQuery}
-        onChange={handleSearchChange}
-        sx={{
-          marginLeft: 2,
-          width: '300px',
-          '& .MuiOutlinedInput-root': {
-            '& fieldset': {
-              borderColor: '#CA6DF2',
-            },
-            '&:hover fieldset': {
-              borderColor: '#B86AD9',
-            },
-            '&.Mui-focused fieldset': {
-              borderColor: '#A55BC0',
-            },
-          },
-          '& .MuiInputBase-input': {
-            color: '#2D2D2D',
-            backgroundColor: 'white',
-            padding: '10px 14px',
-            borderRadius: '4px',
-          },
-          '& .MuiOutlinedInput-notchedOutline': {
-            borderRadius: '8px',
-          },
-        }}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <Search sx={{ color: '#CA6DF2' }} />
-            </InputAdornment>
-          ),
-        }}
-      />
-      </Box>
-    </Box>
             {suggestions.map((suggestion, index) => (
               <Typography
                 key={index}
