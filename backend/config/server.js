@@ -13,12 +13,13 @@ const bannerRoutes = require('../routes/bannerRoutes');
 const bodyParser = require('body-parser');
 const emailRoutes = require('../routes/mailerRoutes');
 const quejasRoutes = require('../routes/quejasRoutes');
+const personalizacionRoutes = require('../routes/personalizacionRoutes');
 
 const app = express();
 
 // Configurar CORS
 const corsOptions = {
-  origin: process.env.CLIENT_URL || 'http://localhost:3001',
+  origin: process.env.CLIENT_URL || 'http://localhost:3000' || 'https://sweet-pet-shop.vercel.app',
   credentials: true,
 };
 
@@ -46,6 +47,7 @@ app.use('/api/factura', facturaRoutes);
 app.use('/api/orden', ordenRoutes); 
 app.use('/api/banner', bannerRoutes); 
 app.use('/api/quejas', quejasRoutes);
+app.use('/personalizacion', personalizacionRoutes);
 
 app.use(bodyParser.json());
 app.use('/api', emailRoutes);
