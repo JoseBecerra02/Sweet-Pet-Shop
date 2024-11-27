@@ -77,7 +77,7 @@ export default function Catalogo() {
 
   useEffect(() => {
     // Obtener categorías desde el backend
-    axios.get('https://sweet-pet-shop-production.up.railway.app/api/categoria')
+    axios.get('http://localhost:3000/api/categoria')
       .then(response => {
         setCategories(response.data); // Guardar las categorías en el estado
       })
@@ -85,7 +85,7 @@ export default function Catalogo() {
         console.error('Error al obtener categorías:', error);
       });
 
-    axios.get('https://sweet-pet-shop-production.up.railway.app/api/inventario')
+    axios.get('http://localhost:3000/api/inventario')
       .then(response => {
         setProducts(response.data); 
       })
@@ -134,7 +134,7 @@ export default function Catalogo() {
   const handleSaveUmbral = () => {
     const valor = umbralMinimo; 
     
-    axios.put(`https://sweet-pet-shop-production.up.railway.app/api/inventario/umbral/${valor}`)
+    axios.put(`http://localhost:3000/api/inventario/umbral/${valor}`)
       .then((response) => {
         console.log('Umbrales actualizados correctamente:', response.data);
         setUmbral(valor); 
@@ -161,7 +161,7 @@ export default function Catalogo() {
       // Ahora puedes guardar el producto en MongoDB con la URL de la imagen
       const productoConImagen = { ...newProduct, ruta: imageUrl };
 
-      axios.post('https://sweet-pet-shop-production.up.railway.app/api/inventario', productoConImagen)
+      axios.post('http://localhost:3000/api/inventario', productoConImagen)
         .then(response => {
           setProducts([...products, response.data]);
           handleDialogClose();
@@ -182,7 +182,7 @@ export default function Catalogo() {
   const handleAddCategory = () => {
     const categoryToSend = { nombre: newCategory }; 
     
-    axios.post('https://sweet-pet-shop-production.up.railway.app/api/categoria', categoryToSend)
+    axios.post('http://localhost:3000/api/categoria', categoryToSend)
       .then(response => {
         setCategories([...categories, response.data]); 
         setNewCategory("");
@@ -194,7 +194,7 @@ export default function Catalogo() {
   };
   const handleDeleteProduct = (productId) => {
     console.log("Deleting product with ID:", productId);
-    fetch(`https://sweet-pet-shop-production.up.railway.app/api/inventario/producto/${productId}`, {
+    fetch(`http://localhost:3000/api/inventario/producto/${productId}`, {
       method: "DELETE",
     })
       .then(response => {
@@ -217,7 +217,7 @@ export default function Catalogo() {
 
   // Guardar los cambios de edición de una categoría
   const handleSaveClick = (categoryId) => {
-    axios.put(`https://sweet-pet-shop-production.up.railway.app/api/categoria/${categoryId}`, { nombre: editCategoryName })
+    axios.put(`http://localhost:3000/api/categoria/${categoryId}`, { nombre: editCategoryName })
       .then(() => {
         const updatedCategories = categories.map((cat) =>
           cat._id === categoryId ? { ...cat, nombre: editCategoryName } : cat
@@ -232,7 +232,7 @@ export default function Catalogo() {
 
   // Eliminar una categoría
   const handleCategoryDelete = (categoryId) => {
-    axios.delete(`https://sweet-pet-shop-production.up.railway.app/api/categoria/${categoryId}`)
+    axios.delete(`http://localhost:3000/api/categoria/${categoryId}`)
       .then(() => {
         setCategories(categories.filter(cat => cat._id !== categoryId));
       })
@@ -250,7 +250,7 @@ export default function Catalogo() {
   // Guardar los cambios de edición de un producto
   const handleProductSaveClick = (productId) => {
     console.log('Editando producto:', editProductData);
-    axios.put(`https://sweet-pet-shop-production.up.railway.app/api/inventario/producto/${productId}`, editProductData)
+    axios.put(`http://localhost:3000/api/inventario/producto/${productId}`, editProductData)
       .then(() => {
         const updatedProducts = products.map((prod) =>
           prod._id === productId ? { ...prod, ...editProductData } : prod
@@ -265,7 +265,7 @@ export default function Catalogo() {
 
   // Eliminar un producto
   const handleProductDelete = (productId) => {
-    axios.delete(`https://sweet-pet-shop-production.up.railway.app/api/inventario/producto/${productId}`)
+    axios.delete(`http://localhost:3000/api/inventario/producto/${productId}`)
       .then(() => {
         setProducts(products.filter(prod => prod._id !== productId));
       })

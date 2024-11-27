@@ -1,12 +1,87 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { Grid, Card, CardContent, CardMedia, Typography, Box, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button, Snackbar, Alert, TextField, InputAdornment } from '@mui/material';
 import { ShoppingCart, Search } from '@mui/icons-material';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { OrbitControls, useGLTF } from '@react-three/drei';
+import * as THREE from 'three';
 
 const defaultImageUrl = 'https://img.freepik.com/foto-gratis/perro-lindo-arte-digital_23-2151150544.jpg';
 
-function ProductDetailsModal({ open, onClose, product }) {
+function CollarModel({ color }) {
+  const { scene, materials } = useGLTF(`${process.env.PUBLIC_URL}/assets/collar.glb`);
+
+  useEffect(() => {
+    if (materials) {
+      console.log('Materiales disponibles:', materials);
+
+      // Lista de materiales que quieres personalizar (solo los grises)
+      const customizableMaterialNames = ["", "Dark Brown Leather", "metal"];
+      customizableMaterialNames.forEach((materialName) => {
+        if (materials[materialName]) {
+          console.log(`Aplicando color a ${materialName}`);
+          // Solo cambiar el color de la parte central de la cinta
+          if (materialName === "") {
+            materials[materialName].color = new THREE.Color(color);
+          }
+          materials[materialName].metalness = 0.5;
+          materials[materialName].roughness = 0.4;
+        } else {
+          console.log(`Material ${materialName} no encontrado`);
+        }
+      });
+    }
+  }, [color, materials]);
+
+  return <primitive object={scene} scale={2} />;
+}
+
+function ProductDetailsModal({ open, onClose, product, onSaveCustomization }) {
+  const [user, setUser] = useState({});
+  const [selectedColor, setSelectedColor] = useState('');
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = Cookies.get('token');
+        if (!token) {
+          console.error('Token no encontrado');
+          return;
+        }
+
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          withCredentials: true,
+        };
+
+        const response = await axios.get('http://localhost:3000/api/usuarios/perfil', config);
+        setUser(response.data.user);
+      } catch (error) {
+        console.error('Error al obtener el perfil:', error);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+
+  const handleSaveCustomization = () => {
+    if (product && product.nombre_producto === "Collar para perros") {
+      const customizationData = {
+        usuarioId: user._id, // Necesitas tener el id del usuario autenticado
+        productoId: product._id,
+        opciones: {
+          color: selectedColor,
+        },
+      };
+      console.log('Datos de personalización a guardar:', customizationData);
+      onSaveCustomization(customizationData);
+    }
+  };
+
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle sx={{ backgroundColor: '#CA6DF2', color: '#F2F2F2' }}>{product.nombre_producto}</DialogTitle>
@@ -17,9 +92,46 @@ function ProductDetailsModal({ open, onClose, product }) {
           <Typography variant="body1">{product.descripcion}</Typography>
           <Typography variant="body2" color="textSecondary">Categoría: {product.categoriaNombre}</Typography>
         </DialogContentText>
+        
+        {product.nombre_producto === "Collar para perros" && (
+          <Box sx={{ marginTop: 3 }}>
+            <Typography variant="h6" gutterBottom>Personaliza tu collar</Typography>
+            <TextField
+              select
+              value={selectedColor}
+              onChange={(e) => setSelectedColor(e.target.value)}
+              fullWidth
+              SelectProps={{ native: true }}
+              sx={{ marginBottom: 2 }}
+            >
+              <option value="">Seleccione un color</option>
+              <option value="#ff0000">Rojo</option>
+              <option value="#0000ff">Azul</option>
+              <option value="#00ff00">Verde</option>
+              <option value="#000000">Negro</option>
+              <option value="#ffffff">Blanco</option>
+            </TextField>
+            <Box sx={{ height: 400, marginTop: 2 }}>
+              <Canvas shadows camera={{ position: [0, 0, 10], fov: 35 }}>
+                <ambientLight intensity={1.5} />
+                <directionalLight position={[10, 10, 10]} intensity={2} castShadow />
+                <pointLight position={[-10, -10, -10]} intensity={1.0} />
+                <Suspense fallback={null}>
+                  <CollarModel color={selectedColor} />
+                </Suspense>
+                <OrbitControls enableZoom={true} />
+              </Canvas>
+            </Box>
+          </Box>
+        )}
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} sx={{ color: '#CA6DF2' }}>Cerrar</Button>
+        {product.nombre_producto === "Collar para perros" && (
+          <Button onClick={handleSaveCustomization} sx={{ color: '#CA6DF2' }} disabled={!selectedColor}>
+            Guardar Personalización
+          </Button>
+        )}
       </DialogActions>
     </Dialog>
   );
@@ -39,7 +151,7 @@ export default function CatalogoCliente() {
   const [highlightedSuggestion, setHighlightedSuggestion] = useState('');
 
   useEffect(() => {
-    axios.get('https://sweet-pet-shop-production.up.railway.app/api/categoria')
+    axios.get('http://localhost:3000/api/categoria')
       .then(response => {
         const categoriesData = response.data.map(category => ({
           _id: category._id.$oid || category._id,
@@ -54,7 +166,7 @@ export default function CatalogoCliente() {
 
   useEffect(() => {
     if (categories.length > 0) {
-      axios.get('https://sweet-pet-shop-production.up.railway.app/api/inventario/productos')
+      axios.get('http://localhost:3000/api/inventario/productos')
         .then(response => {
           const productsWithCategoryNames = response.data.map(product => {
             const category = categories.find(cat => cat._id === (product.categoria.$oid || product.categoria));
@@ -88,7 +200,7 @@ export default function CatalogoCliente() {
           withCredentials: true,
         };
 
-        const response = await axios.get('https://sweet-pet-shop-production.up.railway.app/api/usuarios/perfil', config);
+        const response = await axios.get('http://localhost:3000/api/usuarios/perfil', config);
         setUser(response.data.user);
       } catch (error) {
         console.error('Error al obtener el perfil:', error);
@@ -183,7 +295,7 @@ export default function CatalogoCliente() {
         cantidad: 1,
       };
 
-      const response = await axios.post('https://sweet-pet-shop-production.up.railway.app/api/carrito/carrito/agregar', carritoData, config);
+      const response = await axios.post('http://localhost:3000/api/carrito/carrito/agregar', carritoData, config);
       if (response.status === 200) {
         setSnackbarOpen(true);
       }
@@ -191,6 +303,74 @@ export default function CatalogoCliente() {
       console.error('Error al agregar el producto al carrito:', error.message);
     }
   };
+
+  const handleSaveCustomization = async (customizationData) => {
+    try {
+      console.log('Datos de personalización recibidos:', customizationData);
+      const token = Cookies.get('token');
+      console.log('Token encontrado:', token);
+      if (!token) {
+        alert('Por favor, inicia sesión para personalizar productos.');
+        return;
+      }
+  
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        withCredentials: true,
+      };
+  
+      console.log('Configuración de la petición:', config);
+      const response = await axios.post('http://localhost:3000/personalizacion/personalizacion', customizationData, config);
+      console.log('Respuesta del servidor:', response);
+  
+      if (response.status === 201) {
+        alert('Personalización guardada exitosamente!');
+  
+        // Extraer el ID de la personalización guardada
+        const personalizacionId = response.data.personalizacion._id;
+  
+        // Agregar la personalización al carrito
+        handleAddPersonalizationToCart({
+          id_usuario: user._id,
+          id_personalizacion: personalizacionId,
+          cantidad: 1,
+        });
+      }
+    } catch (error) {
+      console.error('Error al guardar la personalización:', error.message);
+    }
+  };
+  
+  const handleAddPersonalizationToCart = async (cartData) => {
+    try {
+      console.log('Datos de personalización para agregar al carrito:', cartData);
+      const token = Cookies.get('token');
+      console.log('Token encontrado:', token);
+      if (!token) {
+        alert('Por favor, inicia sesión para agregar productos al carrito.');
+        return;
+      }
+  
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        withCredentials: true,
+      };
+  
+      const response = await axios.post('http://localhost:3000/api/carrito/carrito/agregarPersonalizacion', cartData, config);
+      console.log('Respuesta del servidor al agregar al carrito:', response);
+  
+      if (response.status === 200) {
+        alert('Producto personalizado agregado al carrito exitosamente!');
+      }
+    } catch (error) {
+      console.error('Error al agregar el producto personalizado al carrito:', error.message);
+    }
+  };
+   
 
   const handleCloseSnackbar = () => {
     setSnackbarOpen(false);
@@ -323,6 +503,7 @@ export default function CatalogoCliente() {
           open={dialogOpen}
           onClose={handleCloseDialog}
           product={selectedProduct}
+          onSaveCustomization={handleSaveCustomization}
         />
       )}
 

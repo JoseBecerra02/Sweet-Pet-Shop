@@ -10,7 +10,7 @@ const GoogleLogin = () => {
 
   const handleCredentialResponse = async (response) => {
     try {
-      const res = await axios.post('https://sweet-pet-shop-production.up.railway.app/api/usuarios/google-login', {
+      const res = await axios.post('http://localhost:3000/api/usuarios/google-login', {
         token: response.credential,
       });
   

@@ -9,7 +9,7 @@ const PersonalizacionSchema = new mongoose.Schema({
     color: { 
       type: String, 
       required: true, 
-      enum: ['rojo', 'azul', 'verde', 'negro', 'blanco'], // Lista de colores permitidos
+      enum: ['#ff0000', '#0000ff', '#00ff00', '#000000', '#ffffff'], // Lista de colores permitidos
     },
   },
   fecha: { type: Date, default: Date.now },

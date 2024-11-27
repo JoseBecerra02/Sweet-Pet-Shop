@@ -69,7 +69,7 @@ export default function Usuarios() {
   const [filterRole, setFilterRole] = useState("todos");
 
   useEffect(() => {
-    axios.get('https://sweet-pet-shop-production.up.railway.app/api/usuarios/usuarios')
+    axios.get('http://localhost:3000/api/usuarios/usuarios')
       .then(response => {
         setUsers(response.data);
         setFilteredUsers(response.data);
@@ -99,7 +99,7 @@ export default function Usuarios() {
   };
 
   const handleAddUser = () => {
-    axios.post('https://sweet-pet-shop-production.up.railway.app/api/usuarios/usuarios', newUser)
+    axios.post('http://localhost:3000/api/usuarios/usuarios', newUser)
       .then(response => {
         setUsers([...users, response.data]); 
         setFilteredUsers([...users, response.data]);
@@ -118,7 +118,7 @@ export default function Usuarios() {
   };
 
   const handleDeleteUser = (userId) => {
-    axios.delete(`https://sweet-pet-shop-production.up.railway.app/api/usuarios/usuarios/${userId}`)
+    axios.delete(`http://localhost:3000/api/usuarios/usuarios/${userId}`)
       .then(() => {
         const updatedUsers = users.filter(user => user._id !== userId);
         setUsers(updatedUsers);
@@ -133,7 +133,7 @@ export default function Usuarios() {
   };
 
   const handleUserSaveClick = (userId) => {
-    axios.put(`https://sweet-pet-shop-production.up.railway.app/api/usuarios/usuarios/${userId}`, editUserData)
+    axios.put(`http://localhost:3000/api/usuarios/usuarios/${userId}`, editUserData)
       .then(() => {
         const updatedUsers = users.map((user) =>
           user._id === userId ? { ...user, ...editUserData } : user
