@@ -176,7 +176,7 @@ export default function Usuarios() {
 
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
         <Toolbar sx={{ pt: 7, pb: 4 }}>
-          <Typography variant="h4" sx={{ flexGrow: 1 }}>
+          <Typography variant="h4" sx={{ flexGrow: 1,  fontWeight: 'bold'}}>
             Gestión de Usuarios
           </Typography>
           <FormControl sx={{ minWidth: 150, mr: 2 }}>

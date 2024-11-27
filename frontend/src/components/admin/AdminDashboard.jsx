@@ -15,14 +15,18 @@ import {
   CardContent,
 } from "@mui/material";
 import Grid from '@mui/material/Grid';
-import { Menu as MenuIcon, Notifications, Home, People, Inventory, ShoppingCart, Logout, Assignment } from "@mui/icons-material";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { Menu as MenuIcon, Notifications, Home, People, Inventory, ShoppingCart, Logout, Assignment, CoPresent} from "@mui/icons-material";
+import ModeCommentIcon from '@mui/icons-material/ModeComment';
+import CoPresentIcon from '@mui/icons-material/CoPresent';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 import Cookies from 'js-cookie';
 import axios from "axios";
 import Catalogo from './Catalogo';
 import Informes from './Informes';
 import Orders from './Orders';
 import Users from './Users';
+import GestionSolicitudes from './GestionSolicitudes';
+import VistaUser from './GestionVistaUser';
 
 export default function AdminDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -36,7 +40,7 @@ export default function AdminDashboard() {
   const [ventasMensuales, setVentasMensuales] = useState([]);
   const [ventasPorUsuario, setVentasPorUsuario] = useState([]);
   const [ventasPorCategoria, setVentasPorCategoria] = useState([]);
-
+  const [categoriasData, setCategoriasData] = useState([]); // Datos de categorías para el gráfico circular
 
   useEffect(() => {
     // Obtener productos y calcular métricas de inventario
@@ -51,6 +55,13 @@ export default function AdminDashboard() {
         setProductosDisponibles(totalCantidad);
         setProductosBajoInventario(bajoInventario);
         setUmbralMinimo(umbral);
+
+        // Calcular datos para el gráfico circular
+        const categorias = productos.reduce((acc, producto) => {
+          acc[producto.categoria] = (acc[producto.categoria] || 0) + producto.cantidad;
+          return acc;
+        }, {});
+        setCategoriasData(Object.entries(categorias).map(([name, value]) => ({ name, value })));
       } catch (error) {
         console.error("Error al obtener datos de inventario:", error);
       }
@@ -80,7 +91,7 @@ export default function AdminDashboard() {
 
     const fetchSalesData = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/api/facturas/informes/ventas/mensual"); // Ruta del backend para ventas mensuales
+        const response = await axios.get("http://localhost:3000/api/factura/informes/ventas/mensual"); // Ruta del backend para ventas mensuales
         const formattedData = response.data.map((item) => ({
           name: `${item._id.mes}/${item._id.anio}`,
           sales: item.totalVentas,
@@ -174,8 +185,6 @@ export default function AdminDashboard() {
     fetchVentasPorCategoria();
   }, []);
 
-
-
   const toggleDrawer = () => {
     setSidebarOpen(!sidebarOpen);
   };
@@ -187,13 +196,15 @@ export default function AdminDashboard() {
     window.location.href = '/'; 
   };
 
+  const COLORS = ["#CA6DF2", "#B86AD9", "#F2F2F2", "#2D2D2D"];
+
   // Función para renderizar la sección seleccionada
   const renderSelectedSection = () => {
     switch (selectedSection) {
       case 'home':
         return (
           <>
-            <Grid container spacing={2} sx={{marginTop:'60px'}}>
+            <Grid container spacing={2} sx={{ marginTop: '60px' }}>
               <Grid item xs={12} sm={6} md={2.4}>
                 <Card sx={{ height: "100%" }}>
                   <CardContent>
@@ -243,8 +254,43 @@ export default function AdminDashboard() {
                   </CardContent>
                 </Card>
               </Grid>
-            </Grid>
 
+              <Grid item xs={12} md={6} sx={{ mt: 2 }}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6">Distribución de Productos por Categoría</Typography>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <PieChart>
+                        <Pie data={categoriasData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} fill="#B86AD9">
+                          {categoriasData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <Card sx={{ mt: 4 }}>
+                  <CardContent>
+                    <Typography variant="h6">Resumen de Ventas Mensuales</Typography>
+                    <ResponsiveContainer width="100%" height={300} style={{ padding: '10px' }}>
+                      <BarChart data={salesData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip />
+                        <Bar dataKey="sales" fill="#B86AD9" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
           <Grid container spacing={2} sx={{marginTop:'60px'}}>
             <Grid item xs={12} sm={6} md={2.4}>
                 <Card sx={{ height: "100%" }}>
@@ -302,6 +348,10 @@ export default function AdminDashboard() {
         return <Orders />;
       case 'users':
         return <Users />;
+      case 'solicitudes':
+        return <GestionSolicitudes />;
+      case 'vistaUser':
+        return <VistaUser />;
       default:
         return <div>Bienvenido al Panel de Administración</div>;
     }
@@ -357,6 +407,14 @@ export default function AdminDashboard() {
               <ListItemIcon><ShoppingCart /></ListItemIcon>
               {sidebarOpen && <ListItemText primary="Órdenes" />}
             </ListItem>
+            <ListItem button onClick={() => setSelectedSection('solicitudes')}>
+              <ListItemIcon><ModeCommentIcon /></ListItemIcon>
+              {sidebarOpen && <ListItemText primary="Gestión Solicitudes" />}
+            </ListItem>
+            <ListItem button onClick={() => setSelectedSection('vistaUser')}>
+              <ListItemIcon><CoPresentIcon /></ListItemIcon>
+              {sidebarOpen && <ListItemText primary="Gestión vista Usuario" />}
+            </ListItem>
             <ListItem button onClick={handleLogout}>
               <ListItemIcon><Logout /></ListItemIcon>
               {sidebarOpen && <ListItemText primary="Cerrar Sesión" />}
@@ -370,4 +428,4 @@ export default function AdminDashboard() {
       </Box>
     </Box>
   );
-}
+};

@@ -9,12 +9,17 @@ const inventarioRoutes = require('../routes/inventarioRoutes'); // Nueva ruta
 const categoriaRoutes = require('../routes/categoriaRoutes'); // Asegúrate de tener esta línea
 const usuarioRoutes = require('../routes/usuarioRoutes');
 const carritoRoutes = require('../routes/carritoRoutes');
+const bannerRoutes = require('../routes/bannerRoutes');
+const bodyParser = require('body-parser');
+const emailRoutes = require('../routes/mailerRoutes');
+const quejasRoutes = require('../routes/quejasRoutes');
+const personalizacionRoutes = require('../routes/personalizacionRoutes');
 
 const app = express();
 
 // Configurar CORS
 const corsOptions = {
-  origin: process.env.CLIENT_URL || 'http://localhost:3001',
+  origin: process.env.CLIENT_URL || 'http://localhost:3000' || 'https://sweet-pet-shop.vercel.app',
   credentials: true,
 };
 
@@ -40,6 +45,12 @@ app.use('/api/categoria', categoriaRoutes);
 app.use('/api/carrito', carritoRoutes);
 app.use('/api/factura', facturaRoutes); 
 app.use('/api/orden', ordenRoutes); 
+app.use('/api/banner', bannerRoutes); 
+app.use('/api/quejas', quejasRoutes);
+app.use('/personalizacion', personalizacionRoutes);
+
+app.use(bodyParser.json());
+app.use('/api', emailRoutes);
 
 // Manejo de errores global
 app.use((err, req, res, next) => {

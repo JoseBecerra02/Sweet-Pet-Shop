@@ -3,7 +3,7 @@
 const { OAuth2Client } = require('google-auth-library');
 const jwt = require('jsonwebtoken');
 const Usuario = require('../models/Usuario');
-const { sendWelcomeEmail } = require('../controllers/MailController');
+const { sendWelcomeEmail } = require('./MailController');
 
 const client = new OAuth2Client(process.env.GOOGLE_OAUTH_CLIENT_ID);
 
