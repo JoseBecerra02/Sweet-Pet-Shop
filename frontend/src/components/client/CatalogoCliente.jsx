@@ -406,7 +406,7 @@ export default function CatalogoCliente() {
           placeholder="Precio mínimo"
           value={minPrice}
           onChange={(e) => setMinPrice(e.target.value)}
-          sx={{ width: '150px', marginRight: 2 }}
+          sx={{ width: '100px', marginRight: 2 }}
         />
         <TextField
           type="number"
@@ -414,7 +414,7 @@ export default function CatalogoCliente() {
           placeholder="Precio máximo"
           value={maxPrice}
           onChange={(e) => setMaxPrice(e.target.value)}
-          sx={{ width: '150px', marginRight: 2 }}
+          sx={{ width: '100px', marginRight: 2 }}
         />
         <Button
           variant="outlined"
@@ -423,30 +423,76 @@ export default function CatalogoCliente() {
             setSortOrder(newOrder);
             filterProducts(searchQuery, selectedCategories);
           }}
-          sx={{ textTransform: 'none', marginRight: 2 }}
+          sx={{
+            textTransform: 'none',
+            width: '200px',
+            color: '#CA6DF2',
+            borderColor: '#CA6DF2',
+            '&:hover': {
+              backgroundColor: '#CA6DF2',
+              color: '#FFF',
+              borderColor: '#CA6DF2'
+            },
+            marginRight: 2
+          }}
         >
           Ordenar por precio: {sortOrder === 'asc' ? 'Ascendente' : 'Descendente'}
         </Button>
         <Button
           variant={inStock ? 'contained' : 'outlined'}
           onClick={() => setInStock(!inStock)}
-          sx={{ textTransform: 'none', marginRight: 2 }}
+          sx={{
+            textTransform: 'none',
+            color: inStock ? '#FFF' : '#CA6DF2',
+            borderColor: '#CA6DF2',
+            backgroundColor: inStock ? '#CA6DF2' : 'transparent',
+            '&:hover': {
+              backgroundColor: '#CA6DF2',
+              color: '#FFF',
+              borderColor: '#CA6DF2'
+            },
+            marginRight: 2
+          }}
         >
-          {inStock ? 'En Stock' : 'En Stock'}
+          En Stock
         </Button>
         <Button
           variant={onSale ? 'contained' : 'outlined'}
           onClick={() => setOnSale(!onSale)}
-          sx={{ textTransform: 'none', marginRight: 2 }}
+          sx={{
+            textTransform: 'none',
+            height: '60px',
+            color: onSale ? '#FFF' : '#CA6DF2',
+            borderColor: '#CA6DF2',
+            backgroundColor: onSale ? '#CA6DF2' : 'transparent',
+            '&:hover': {
+              backgroundColor: '#CA6DF2',
+              color: '#FFF',
+              borderColor: '#CA6DF2'
+            },
+            marginRight: 2
+          }}
         >
-          {onSale ? 'Promociones' : 'Promociones'}
+          Promociones
         </Button>
         {categories.map((category) => (
           <Button
             key={category._id}
             variant={selectedCategories.includes(category._id) ? 'contained' : 'outlined'}
             onClick={() => handleCategoryChange(category._id)}
-            sx={{ textTransform: 'none', marginRight: 2 }}
+            sx={{
+              textTransform: 'none',
+              height: '60px',
+              color: selectedCategories.includes(category._id) ? '#FFF' : '#CA6DF2',
+              borderColor: '#CA6DF2',
+              backgroundColor: selectedCategories.includes(category._id) ? '#CA6DF2' : 'transparent',
+              '&:hover': {
+                backgroundColor: '#CA6DF2',
+                color: '#FFF',
+                borderColor: '#CA6DF2'
+              },
+              marginRight: 2
+            }}
           >
             {category.nombre}
           </Button>
@@ -457,7 +503,7 @@ export default function CatalogoCliente() {
           value={searchQuery}
           onChange={handleSearchChange}
           onKeyDown={handleKeyDown}
-          sx={{ width: '300px' }}
+          sx={{ width: '250px' }}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -467,18 +513,19 @@ export default function CatalogoCliente() {
           }}
         />
       </Box>
-
       {suggestions.length > 0 && (
         <Box sx={{ position: 'relative' }}>
           <Box
             sx={{
               position: 'absolute',
+              top: '-20px',
+              right: 1,
               backgroundColor: '#FFF',
               border: '1px solid #CA6DF2',
               borderRadius: '4px',
-              width: '300px',
+              width: '230px',
               zIndex: 10,
-              marginTop: '-15px',
+              marginTop: '5px',
             }}
           >
             {suggestions.map((suggestion, index) => (
@@ -503,7 +550,6 @@ export default function CatalogoCliente() {
           </Box>
         </Box>
       )}
-
       <Grid container spacing={3}>
         {filteredProducts.map((product) => (
           <Grid item xs={12} sm={6} md={4} key={product._id}>
