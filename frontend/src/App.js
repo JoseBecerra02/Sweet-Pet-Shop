@@ -40,7 +40,7 @@ const App = () => {
       const { credential } = credentialResponse;
 
       // Enviar el token al backend para autenticar
-      const res = await axios.post('http://localhost:3000/api/usuarios/google-login', { token: credential });
+      const res = await axios.post('https://sweet-pet-shop-production.up.railway.app/api/usuarios/google-login', { token: credential });
 
       // Guardar el token JWT en cookies si la autenticación fue exitosa
       Cookies.set('token', res.data.token, { expires: 5 });

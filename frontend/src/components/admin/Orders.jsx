@@ -42,7 +42,7 @@ export default function Orders() {
   useEffect(() => {
     const fetchOrdenes = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/api/orden'); 
+        const response = await axios.get('https://sweet-pet-shop-production.up.railway.app/api/orden'); 
         setOrdenes(response.data);
       } catch (error) {
         console.error('Error al obtener órdenes:', error);
@@ -51,7 +51,7 @@ export default function Orders() {
 
     const fetchProductos = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/api/inventario/productos');
+        const response = await axios.get('https://sweet-pet-shop-production.up.railway.app/api/inventario/productos');
         setProductos(response.data);
       } catch (error) {
         console.error('Error al obtener productos:', error);
@@ -71,7 +71,7 @@ export default function Orders() {
 
   const handleSaveClick = async (ordenId) => {
     try {
-      const response = await axios.patch(`http://localhost:3000/api/orden/estado/${ordenId}`, { estado: estadoTemporal });
+      const response = await axios.patch(`https://sweet-pet-shop-production.up.railway.app/api/orden/estado/${ordenId}`, { estado: estadoTemporal });
       setOrdenes(prevOrdenes =>
         prevOrdenes.map(orden =>
           orden.id_orden === ordenId ? { ...orden, estado: response.data.estado } : orden

@@ -54,18 +54,18 @@ export default function Carrito() {
         };
     
         // Fetch User Profile
-        const profileResponse = await axios.get('http://localhost:3000/api/usuarios/perfil', config);
+        const profileResponse = await axios.get('https://sweet-pet-shop-production.up.railway.app/api/usuarios/perfil', config);
         if (profileResponse.status === 200) {
           const fetchedUser = profileResponse.data.user;
           setUser(fetchedUser);
     
           // Fetch Cart Items using user._id from profileResponse
-          const cartResponse = await axios.get(`http://localhost:3000/api/carrito/carrito/${fetchedUser._id}`, config);
+          const cartResponse = await axios.get(`https://sweet-pet-shop-production.up.railway.app/api/carrito/carrito/${fetchedUser._id}`, config);
           if (cartResponse.status === 200) {
             const fetchedCartItems = cartResponse.data.items || [];
     
             // Fetch all personalizations for the user
-            const personalizationResponse = await axios.get(`http://localhost:3000/personalizacion/personalizaciones/usuario/${fetchedUser._id}`, config);
+            const personalizationResponse = await axios.get(`https://sweet-pet-shop-production.up.railway.app/personalizacion/personalizaciones/usuario/${fetchedUser._id}`, config);
             let personalizaciones = [];
             if (personalizationResponse.status === 200) {
               personalizaciones = personalizationResponse.data.personalizaciones || [];
@@ -90,7 +90,7 @@ export default function Carrito() {
     
                   // En caso de que no exista, hacemos la búsqueda específica
                   const individualPersonalizationResponse = await axios.get(
-                    `http://localhost:3000/personalizacion/personalizacion/${item.id_producto}`,
+                    `https://sweet-pet-shop-production.up.railway.app/personalizacion/personalizacion/${item.id_producto}`,
                     config
                   );
     
@@ -136,7 +136,7 @@ export default function Carrito() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/api/inventario/productos');
+        const response = await axios.get('https://sweet-pet-shop-production.up.railway.app/api/inventario/productos');
         if (response.status === 200) {
           setProducts(response.data);
         } else {
@@ -178,7 +178,7 @@ export default function Carrito() {
         action: action, // 'increment' o 'decrement'
       };
   
-      const response = await axios.put('http://localhost:3000/api/carrito/carrito/actualizar', updateData, config);
+      const response = await axios.put('https://sweet-pet-shop-production.up.railway.app/api/carrito/carrito/actualizar', updateData, config);
   
       if (response.status === 200) {
         console.log('Cantidad actualizada con éxito:', response.data);
@@ -240,7 +240,7 @@ export default function Carrito() {
         withCredentials: true,
       };
   
-      const response = await axios.delete(`http://localhost:3000/api/carrito/carrito/eliminar/${productId}`, {
+      const response = await axios.delete(`https://sweet-pet-shop-production.up.railway.app/api/carrito/carrito/eliminar/${productId}`, {
         headers: config.headers,
         data: { id_usuario: user._id },
       });
@@ -304,7 +304,7 @@ export default function Carrito() {
         };
 
         // Usar la URL correcta del endpoint para crear la factura
-        const response = await axios.post('http://localhost:3000/api/factura/factura/crear', facturaData, config);
+        const response = await axios.post('https://sweet-pet-shop-production.up.railway.app/api/factura/factura/crear', facturaData, config);
 
         if (response.status === 201) {
             console.log('Factura creada con éxito:', response.data);
@@ -321,14 +321,14 @@ export default function Carrito() {
             };
 
             // Crear la orden en el backend
-            const ordenResponse = await axios.post('http://localhost:3000/api/orden', ordenData, config);
+            const ordenResponse = await axios.post('https://sweet-pet-shop-production.up.railway.app/api/orden', ordenData, config);
             
             if (ordenResponse.status === 201) {
               console.log('Orden creada con éxito:', ordenResponse.data);
                 // Eliminar las personalizaciones para los productos del carrito
                 await Promise.all(cartItems.map(async (item) => {
                   try {
-                    const deleteResponse = await axios.delete(`http://localhost:3000/personalizacion/personalizacion/eliminar/${item.id_producto}/${user._id}`, config);
+                    const deleteResponse = await axios.delete(`https://sweet-pet-shop-production.up.railway.app/personalizacion/personalizacion/eliminar/${item.id_producto}/${user._id}`, config);
                     if (deleteResponse.status === 200) {
                       console.log(`Personalización del producto con ID ${item.id_producto} eliminada con éxito`);
                     } else {
