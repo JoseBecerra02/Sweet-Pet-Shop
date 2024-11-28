@@ -464,7 +464,7 @@ export default function Carrito() {
               sx={{ backgroundColor: '#B86AD9', color: 'white', padding: '15px', borderRadius: '30px', fontSize: '18px', fontWeight: 'bold', width: '100%', '&:hover': { backgroundColor: '#A55BC0' } }}
               onClick={handleOpenInvoice}
             >
-              PROCEDER AL PAGO
+              PROCEDER CON LA COMPRA
             </Button>
           </Paper>
         </Grid>
