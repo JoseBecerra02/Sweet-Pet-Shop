@@ -13,7 +13,7 @@ import {
   CssBaseline,
   Button
 } from '@mui/material';
-import { Menu as MenuIcon, Home, ShoppingCart, Inventory, Person, Logout } from '@mui/icons-material';
+import { Menu as MenuIcon, Home, ShoppingCart, Inventory, Person, Logout, Help} from '@mui/icons-material';
 import Cookies from 'js-cookie';
 import CatalogoCliente from './CatalogoCliente';
 import Carrito from './Carrito';
@@ -111,24 +111,36 @@ export default function ClienteDashboard() {
               </ListItemIcon>
               {sidebarOpen && <ListItemText primary="Catálogo" />}
             </ListItem>
+
             <ListItem button onClick={() => setSelectedSection('carrito')}>
               <ListItemIcon>
                 <ShoppingCart />
               </ListItemIcon>
               {sidebarOpen && <ListItemText primary="Carrito" />}
             </ListItem>
+
             <ListItem button onClick={() => setSelectedSection('historialPedidos')}>
               <ListItemIcon>
                 <Inventory />
               </ListItemIcon>
               {sidebarOpen && <ListItemText primary="Órdenes" />}
             </ListItem>
+
             <ListItem button onClick={() => setSelectedSection('perfil')}>
               <ListItemIcon>
                 <Person />
               </ListItemIcon>
               {sidebarOpen && <ListItemText primary="Perfil" />}
             </ListItem>
+
+            <ListItem button onClick={() => window.open('https://youtu.be/UiUOtvYiCCo?si=wz6aViKpDACdlnE9', '_blank')}>
+              <ListItemIcon>
+                <Help />
+              </ListItemIcon>
+              {sidebarOpen && <ListItemText primary="Ayuda" />}
+            </ListItem>
+
+
             <ListItem button onClick={handleLogout}>
               <ListItemIcon>
                 <Logout />
