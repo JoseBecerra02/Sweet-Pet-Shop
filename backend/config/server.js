@@ -19,7 +19,7 @@ const app = express();
 
 // Configurar CORS
 const corsOptions = {
-  origin: process.env.CLIENT_URL || 'http://localhost:3001' || 'https://sweet-pet-shop.vercel.app',
+  origin: process.env.CLIENT_URL || 'https://sweet-pet-shop-production.up.railway.app' || 'https://sweet-pet-shop.vercel.app',
   credentials: true,
 };
 

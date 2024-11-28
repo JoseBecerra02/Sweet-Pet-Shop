@@ -99,7 +99,7 @@ export default function Usuarios() {
   };
 
   const handleAddUser = () => {
-    axios.post('https://sweet-pet-shop-production.up.railway.app/api/usuarios/usuarios', newUser)
+    axios.post('https://sweet-pet-shop-production.up.railway.app/api/usuarios/crear-usuario', newUser)
       .then(response => {
         setUsers([...users, response.data]); 
         setFilteredUsers([...users, response.data]);

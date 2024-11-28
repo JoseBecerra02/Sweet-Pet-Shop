@@ -36,7 +36,10 @@ export default function AdminDashboard() {
   const [ordenesProcesadas, setOrdenesProcesadas] = useState(0);
   const [usuariosActivos, setUsuariosActivos] = useState(0);
   const [umbralMinimo, setUmbralMinimo] = useState(20); // Valor por defecto de 20
-  const [salesData, setSalesData] = useState([]); // Datos de ventas
+  const [salesData, setSalesData] = useState([]); // Nueva variable de estado para los datos de ventas
+  const [ventasMensuales, setVentasMensuales] = useState([]);
+  const [ventasPorUsuario, setVentasPorUsuario] = useState([]);
+  const [ventasPorCategoria, setVentasPorCategoria] = useState([]);
   const [categoriasData, setCategoriasData] = useState([]); // Datos de categorías para el gráfico circular
 
   useEffect(() => {
@@ -85,7 +88,7 @@ export default function AdminDashboard() {
       }
     };
 
-    // Obtener los datos de ventas mensuales
+
     const fetchSalesData = async () => {
       try {
         const response = await axios.get("https://sweet-pet-shop-production.up.railway.app/api/factura/informes/ventas/mensual"); // Ruta del backend para ventas mensuales
@@ -103,6 +106,83 @@ export default function AdminDashboard() {
     fetchOrdenesData();
     fetchUsuariosData();
     fetchSalesData(); // Llamada para obtener los datos de ventas
+  }, []);
+
+    // Función para obtener y procesar datos de inventario
+  const fetchInventarioData = async () => {
+    try {
+      const productosResponse = await axios.get("https://sweet-pet-shop-production.up.railway.app/api/inventario/productos");
+      const productos = productosResponse.data;
+      const totalCantidad = productos.reduce((acc, producto) => acc + producto.cantidad, 0);
+      const umbral = productos[0]?.umbral || 20;
+      const bajoInventario = productos.filter(producto => producto.cantidad < umbral).length;
+
+      setProductosDisponibles(totalCantidad);
+      setProductosBajoInventario(bajoInventario);
+      setUmbralMinimo(umbral);
+    } catch (error) {
+      console.error("Error al obtener datos de inventario:", error);
+    }
+  };
+
+  // Función para obtener el número total de órdenes
+  const fetchOrdenesData = async () => {
+    try {
+      const ordenesResponse = await axios.get("https://sweet-pet-shop-production.up.railway.app/api/orden");
+      setOrdenesProcesadas(ordenesResponse.data.length);
+    } catch (error) {
+      console.error("Error al obtener datos de órdenes:", error);
+    }
+  };
+
+
+  const fetchSalesData = async () => {
+    try {
+      const response = await axios.get("https://sweet-pet-shop-production.up.railway.app/api/factura/informes/ventas/mensual");
+      const formattedData = response.data.map((item) => ({
+        name: `${item._id.mes}/${item._id.anio}`,
+        sales: item.totalVentas,
+      }));
+      setSalesData(formattedData);
+    } catch (error) {
+      console.error("Error al obtener datos de ventas:", error);
+    }
+  };
+
+  const fetchVentasMensuales = async () => {
+    try {
+      const response = await axios.get("https://sweet-pet-shop-production.up.railway.app/api/factura/informes/ventas/mensual");
+      setVentasMensuales(response.data);
+    } catch (error) {
+      console.error("Error al obtener ventas mensuales:", error);
+    }
+  };
+
+  const fetchVentasPorUsuario = async () => {
+    try {
+      const response = await axios.get("https://sweet-pet-shop-production.up.railway.app/api/factura/informes/ventas/usuarios");
+      setVentasPorUsuario(response.data);
+    } catch (error) {
+      console.error("Error al obtener ventas por usuario:", error);
+    }
+  };
+
+  const fetchVentasPorCategoria = async () => {
+    try {
+      const response = await axios.get("https://sweet-pet-shop-production.up.railway.app/api/factura/informes/ventas/categorias");
+      setVentasPorCategoria(response.data);
+    } catch (error) {
+      console.error("Error al obtener ventas por categoría:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchInventarioData();
+    fetchOrdenesData();
+    fetchSalesData();
+    fetchVentasMensuales();
+    fetchVentasPorUsuario();
+    fetchVentasPorCategoria();
   }, []);
 
   const toggleDrawer = () => {
@@ -211,6 +291,53 @@ export default function AdminDashboard() {
                 </Card>
               </Grid>
             </Grid>
+          <Grid container spacing={2} sx={{marginTop:'60px'}}>
+            <Grid item xs={12} sm={6} md={2.4}>
+                <Card sx={{ height: "100%" }}>
+                  <CardContent>
+                    <Typography variant="subtitle1">Venta Total mensual</Typography>
+                    <Typography variant="h5" color="#CA6DF2">{ventasMensuales.length}</Typography>
+                    <Typography variant="caption" color="textSecondary">Total de ventas</Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+
+              <Grid item xs={12} sm={6} md={2.4}>
+                <Card sx={{ height: "100%" }}>
+                  <CardContent>
+                    <Typography variant="subtitle1">Venta Total por usuario</Typography>
+                    <Typography variant="h5" color="#CA6DF2">{ventasPorUsuario.length}</Typography>
+                    <Typography variant="caption" color="textSecondary">Total de ventas</Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+
+              <Grid item xs={12} sm={6} md={2.4}>
+                <Card sx={{ height: "100%" }}>
+                  <CardContent>
+                    <Typography variant="subtitle1">Venta Total por categoria</Typography>
+                    <Typography variant="h5" color="#CA6DF2">{ventasPorCategoria.length}</Typography>
+                    <Typography variant="caption" color="textSecondary">Total de ventas</Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              </Grid>
+
+            {/* Gráfico de resumen de ventas */}
+            <Card sx={{ mt: 4}}>
+              <CardContent>
+                <Typography variant="h6">Resumen de Ventas Mensuales</Typography>
+                <ResponsiveContainer width="100%" height={300} style={{padding:'10px'}}>
+                  <BarChart data={salesData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="sales" fill="#B86AD9" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
           </>
         );
       case 'catalogo':

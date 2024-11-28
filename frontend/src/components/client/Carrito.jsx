@@ -1,10 +1,34 @@
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { Box, Typography, List, ListItem, ListItemAvatar, Avatar, ListItemText, IconButton, Button, Grid, Paper, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import { Delete, Add, Remove } from '@mui/icons-material';
 import Cookies from 'js-cookie';
 import axios from 'axios';
+import { Canvas } from '@react-three/fiber';
+import { OrbitControls, useGLTF } from '@react-three/drei';
+import * as THREE from 'three';
 
 const defaultImageUrl = 'https://via.placeholder.com/150';
+
+function CollarModel({ color }) {
+  const { scene, materials } = useGLTF(`${process.env.PUBLIC_URL}/assets/collar.glb`);
+
+  useEffect(() => {
+    if (materials) {
+      const customizableMaterialNames = ["", "Dark Brown Leather", "metal"];
+      customizableMaterialNames.forEach((materialName) => {
+        if (materials[materialName]) {
+          if (materialName === "") {
+            materials[materialName].color = new THREE.Color(color);
+          }
+          materials[materialName].metalness = 0.5;
+          materials[materialName].roughness = 0.4;
+        }
+      });
+    }
+  }, [color, materials]);
+
+  return <primitive object={scene} scale={2} />;
+}
 
 export default function Carrito() {
   const [cartItems, setCartItems] = useState([]);
@@ -12,7 +36,7 @@ export default function Carrito() {
   const [user, setUser] = useState({});
   const [products, setProducts] = useState([]);
 
-  // Obtener los datos del perfil del cliente y luego los productos del carrito
+  
   useEffect(() => {
     const fetchProfileAndCartItems = async () => {
       try {
@@ -21,35 +45,82 @@ export default function Carrito() {
           console.error('Token no encontrado');
           return;
         }
-
+    
         const config = {
           headers: {
             Authorization: `Bearer ${token}`,
           },
           withCredentials: true,
         };
-
+    
         // Fetch User Profile
         const profileResponse = await axios.get('https://sweet-pet-shop-production.up.railway.app/api/usuarios/perfil', config);
         if (profileResponse.status === 200) {
           const fetchedUser = profileResponse.data.user;
           setUser(fetchedUser);
-          console.log('Perfil del cliente:', fetchedUser);
-
+    
           // Fetch Cart Items using user._id from profileResponse
           const cartResponse = await axios.get(`https://sweet-pet-shop-production.up.railway.app/api/carrito/carrito/${fetchedUser._id}`, config);
           if (cartResponse.status === 200) {
-            setCartItems(cartResponse.data.items || []); // Asegurar que siempre se asigna un array
+            const fetchedCartItems = cartResponse.data.items || [];
+    
+            // Fetch all personalizations for the user
+            const personalizationResponse = await axios.get(`https://sweet-pet-shop-production.up.railway.app/personalizacion/personalizaciones/usuario/${fetchedUser._id}`, config);
+            let personalizaciones = [];
+            if (personalizationResponse.status === 200) {
+              personalizaciones = personalizationResponse.data.personalizaciones || [];
+            }
+    
+            // Obtener la personalización específica para cada producto en el carrito si está personalizada
+            const updatedCartItems = await Promise.all(
+              fetchedCartItems.map(async (item) => {
+                try {
+                  // Buscar personalización específica del producto y del usuario
+                  const productoPersonalizacion = personalizaciones.find(
+                    (p) => p.productoId === item.id_producto
+                  );
+    
+                  // Si se encontró una personalización para el producto en cuestión
+                  if (productoPersonalizacion) {
+                    return {
+                      ...item,
+                      opciones: productoPersonalizacion.opciones, // Añadimos la personalización si existe
+                    };
+                  }
+    
+                  // En caso de que no exista, hacemos la búsqueda específica
+                  const individualPersonalizationResponse = await axios.get(
+                    `https://sweet-pet-shop-production.up.railway.app/personalizacion/personalizacion/${item.id_producto}`,
+                    config
+                  );
+    
+                  if (individualPersonalizationResponse.status === 200) {
+                    return {
+                      ...item,
+                      opciones: individualPersonalizationResponse.data.personalizacion.opciones, // Añadimos la personalización si existe
+                    };
+                  }
+                } catch (error) {
+                  console.error(
+                    `Error al obtener la personalización del producto con ID ${item.id_producto}:`,
+                    error
+                  );
+                }
+                return item; // Si no hay personalización, retornamos el item sin cambios
+              })
+            );
+    
+            setCartItems(updatedCartItems);
           } else {
             console.error('Error al obtener el carrito:', cartResponse);
-            setCartItems([]); // Si hay error, asegúrate de que cartItems sea un array vacío
+            setCartItems([]);
           }
         } else {
           console.error('Error al obtener el perfil del usuario:', profileResponse);
         }
       } catch (error) {
         console.error('Error al obtener el perfil o los productos del carrito:', error);
-        setCartItems([]); // Si hay error, asegúrate de que cartItems sea un array vacío
+        setCartItems([]);
       }
     };
 
@@ -59,7 +130,7 @@ export default function Carrito() {
   useEffect(() => {
     console.log("Items del carrito después de ser actualizados:", cartItems);
   }, [cartItems]);
-  
+
 
   // Obtener los detalles de los productos para las imágenes
   useEffect(() => {
@@ -79,11 +150,11 @@ export default function Carrito() {
     fetchProducts();
   }, []);
 
-  // Buscar la imagen del producto por su ID
-  const getProductImage = (productId) => {
-    const product = products.find((prod) => prod._id === productId);
-    return product ? product.ruta : defaultImageUrl;
-  };
+    // Buscar la imagen del producto por su ID
+    const getProductImage = (productId) => {
+      const product = products.find((prod) => prod._id === productId);
+      return product ? product.ruta : defaultImageUrl;
+    };
 
   // Actualizar la cantidad de un producto en el carrito en el backend
   const handleUpdateQuantity = async (productId, action) => {
@@ -253,7 +324,20 @@ export default function Carrito() {
             const ordenResponse = await axios.post('https://sweet-pet-shop-production.up.railway.app/api/orden', ordenData, config);
             
             if (ordenResponse.status === 201) {
-                console.log('Orden creada con éxito:', ordenResponse.data);
+              console.log('Orden creada con éxito:', ordenResponse.data);
+                // Eliminar las personalizaciones para los productos del carrito
+                await Promise.all(cartItems.map(async (item) => {
+                  try {
+                    const deleteResponse = await axios.delete(`https://sweet-pet-shop-production.up.railway.app/personalizacion/personalizacion/eliminar/${item.id_producto}/${user._id}`, config);
+                    if (deleteResponse.status === 200) {
+                      console.log(`Personalización del producto con ID ${item.id_producto} eliminada con éxito`);
+                    } else {
+                      console.error(`Error al eliminar la personalización del producto con ID ${item.id_producto}`, deleteResponse);
+                    }
+                  } catch (error) {
+                    console.error(`Error al eliminar la personalización del producto con ID ${item.id_producto}:`, error);
+                  }
+                }));              
             } else {
                 console.error('Error al crear la orden:', ordenResponse);
             }
@@ -292,14 +376,27 @@ export default function Carrito() {
                   <ListItem key={item.id_producto} sx={{ backgroundColor: '#F2F2F2', borderRadius: '15px', mb: 3, padding: 2, boxShadow: '0 0 20px rgba(0, 0, 0, 0.1)' }}>
                     <Grid container alignItems="center" spacing={2}>
                       <Grid item xs={12} sm={2} md={2} sx={{ textAlign: { xs: 'center', sm: 'left' } }}>
-                        <ListItemAvatar>
+                      <ListItemAvatar>
+                        {item.opciones && item.opciones.color ? (
+                          <Box sx={{ height: 100, width: 100 }}>
+                            <Canvas shadows camera={{ position: [0, 0, 10], fov: 35 }}>
+                              <ambientLight intensity={1.5} />
+                              <directionalLight position={[10, 10, 10]} intensity={2} castShadow />
+                              <Suspense fallback={null}>
+                                <CollarModel color={item.opciones.color} />
+                              </Suspense>
+                              <OrbitControls enableZoom={true} />
+                            </Canvas>
+                          </Box>
+                        ) : (
                           <Avatar
                             variant="square"
                             src={getProductImage(item.id_producto)}
                             alt={item.nombre_producto}
-                            sx={{ width: 100, height: 100, borderRadius: '10px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}
+                            sx={{ width: 100, height: 100 }}
                           />
-                        </ListItemAvatar>
+                        )}
+                      </ListItemAvatar>
                       </Grid>
 
                       {/* Información del producto */}
