@@ -36,7 +36,7 @@ const Perfil = () => {
           withCredentials: true,
         };
 
-        const response = await axios.get('http://localhost:3000/api/usuarios/perfil', config);
+        const response = await axios.get('https://sweet-pet-shop-production.up.railway.app/api/usuarios/perfil', config);
         setUser(response.data.user);
         setTelefono(response.data.user.telefono || '');
         setDireccion(response.data.user.direccion || '');
@@ -62,7 +62,7 @@ const Perfil = () => {
       console.log('Datos a actualizar:', data);
 
       const response = await axios.put(
-        'http://localhost:3000/api/usuarios/perfil',
+        'https://sweet-pet-shop-production.up.railway.app/api/usuarios/perfil',
         data,
         {
           headers: {

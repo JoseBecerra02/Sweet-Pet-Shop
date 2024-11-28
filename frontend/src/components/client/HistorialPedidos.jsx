@@ -34,13 +34,13 @@ export default function HistorialPedidos() {
         };
 
         // Obtener el perfil del usuario para saber el ID
-        const profileResponse = await axios.get('http://localhost:3000/api/usuarios/perfil', config);
+        const profileResponse = await axios.get('https://sweet-pet-shop-production.up.railway.app/api/usuarios/perfil', config);
         const userId = profileResponse.data.user._id;
         setUserId(userId);
 
         // Obtener las órdenes del usuario
 
-        const response = await axios.get(`http://localhost:3000/api/orden/cliente/${userId}`, config);
+        const response = await axios.get(`https://sweet-pet-shop-production.up.railway.app/api/orden/cliente/${userId}`, config);
         setOrderHistory(response.data);
       } catch (error) {
         console.error('Error al obtener el historial de pedidos:', error);
@@ -88,7 +88,7 @@ export default function HistorialPedidos() {
           withCredentials: true,
         };
 
-        const response = await axios.post('http://localhost:3000/api/quejas', newEntry, config);
+        const response = await axios.post('https://sweet-pet-shop-production.up.railway.app/api/quejas', newEntry, config);
         console.log('Respuesta del servidor:', response.data);
       } catch (error) {
         console.error('Error al agregar la queja: ', error);
@@ -127,7 +127,7 @@ export default function HistorialPedidos() {
 
         // Obtener los detalles de los productos
         const productosPromises = productosIds.map(async (productoId) => {
-          const productoResponse = await axios.get(`http://localhost:3000/api/inventario/producto/${productoId}`, config);
+          const productoResponse = await axios.get(`https://sweet-pet-shop-production.up.railway.app/api/inventario/producto/${productoId}`, config);
           return productoResponse.data;
         });
 

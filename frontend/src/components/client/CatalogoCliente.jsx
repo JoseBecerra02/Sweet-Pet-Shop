@@ -55,7 +55,7 @@ function ProductDetailsModal({ open, onClose, product, onSaveCustomization }) {
           withCredentials: true,
         };
 
-        const response = await axios.get('http://localhost:3000/api/usuarios/perfil', config);
+        const response = await axios.get('https://sweet-pet-shop-production.up.railway.app/api/usuarios/perfil', config);
         setUser(response.data.user);
       } catch (error) {
         console.error('Error al obtener el perfil:', error);
@@ -153,7 +153,7 @@ export default function CatalogoCliente() {
   const [sortOrder, setSortOrder] = useState('asc');
 
   useEffect(() => {
-    axios.get('http://localhost:3000/api/categoria')
+    axios.get('https://sweet-pet-shop-production.up.railway.app/api/categoria')
       .then(response => {
         const categoriesData = response.data.map(category => ({
           _id: category._id.$oid || category._id,
@@ -168,7 +168,7 @@ export default function CatalogoCliente() {
 
   useEffect(() => {
     if (categories.length > 0) {
-      axios.get('http://localhost:3000/api/inventario/productos')
+      axios.get('https://sweet-pet-shop-production.up.railway.app/api/inventario/productos')
         .then(response => {
           const productsWithCategoryNames = response.data.map(product => {
             const category = categories.find(cat => cat._id === (product.categoria.$oid || product.categoria));
@@ -208,7 +208,7 @@ export default function CatalogoCliente() {
           withCredentials: true,
         };
 
-        const response = await axios.get('http://localhost:3000/api/usuarios/perfil', config);
+        const response = await axios.get('https://sweet-pet-shop-production.up.railway.app/api/usuarios/perfil', config);
         setUser(response.data.user);
       } catch (error) {
         console.error('Error al obtener el perfil:', error);
@@ -324,7 +324,7 @@ export default function CatalogoCliente() {
         cantidad: 1,
       };
 
-      const response = await axios.post('http://localhost:3000/api/carrito/carrito/agregar', carritoData, config);
+      const response = await axios.post('https://sweet-pet-shop-production.up.railway.app/api/carrito/carrito/agregar', carritoData, config);
       if (response.status === 200) {
         setSnackbarOpen(true);
       }
@@ -349,7 +349,7 @@ export default function CatalogoCliente() {
         withCredentials: true,
       };
 
-      const response = await axios.post('http://localhost:3000/personalizacion/personalizacion', customizationData, config);
+      const response = await axios.post('https://sweet-pet-shop-production.up.railway.app/personalizacion/personalizacion', customizationData, config);
       if (response.status === 201) {
         alert('Personalización guardada exitosamente!');
 
@@ -381,7 +381,7 @@ export default function CatalogoCliente() {
         withCredentials: true,
       };
 
-      const response = await axios.post('http://localhost:3000/api/carrito/carrito/agregarPersonalizacion', cartData, config);
+      const response = await axios.post('https://sweet-pet-shop-production.up.railway.app/api/carrito/carrito/agregarPersonalizacion', cartData, config);
       if (response.status === 200) {
         alert('Producto personalizado agregado al carrito exitosamente!');
       }
